@@ -42,6 +42,26 @@ class Admin {
             25
         );
         
+        // Play Analytics submenu
+        add_submenu_page(
+            'bandfront-analytics',
+            __('Play Analytics', 'bandfront-analytics'),
+            __('Play Analytics', 'bandfront-analytics'),
+            'manage_options',
+            'bandfront-play-analytics',
+            [$this, 'renderPlayAnalyticsPage']
+        );
+        
+        // Member Analytics submenu
+        add_submenu_page(
+            'bandfront-analytics',
+            __('Member Analytics', 'bandfront-analytics'),
+            __('Member Analytics', 'bandfront-analytics'),
+            'manage_options',
+            'bandfront-member-analytics',
+            [$this, 'renderMemberAnalyticsPage']
+        );
+        
         // Settings submenu
         add_submenu_page(
             'bandfront-analytics',
@@ -57,7 +77,7 @@ class Admin {
      * Enqueue admin assets
      */
     public function enqueueAdminAssets(string $hook): void {
-        if (!in_array($hook, ['toplevel_page_bandfront-analytics', 'analytics_page_bandfront-analytics-settings'])) {
+        if (!in_array($hook, ['toplevel_page_bandfront-analytics', 'analytics_page_bandfront-play-analytics', 'analytics_page_bandfront-member-analytics', 'analytics_page_bandfront-analytics-settings'])) {
             return;
         }
         
@@ -105,13 +125,21 @@ class Admin {
         <div class="wrap bfa-analytics-wrap">
             <h1><?php echo esc_html__('Analytics Dashboard', 'bandfront-analytics'); ?></h1>
             
-            <!-- Quick Stats -->
-            <div class="bfa-stats-grid">
+            <!-- Quick Stats - Now with 5 boxes -->
+            <div class="bfa-stats-grid bfa-stats-grid-5">
                 <div class="bfa-stat-card">
                     <div class="bfa-stat-icon">👁️</div>
                     <div class="bfa-stat-content">
                         <div class="bfa-stat-value"><?php echo number_format($quickStats['today_views']); ?></div>
                         <div class="bfa-stat-label"><?php esc_html_e('Views Today', 'bandfront-analytics'); ?></div>
+                    </div>
+                </div>
+                
+                <div class="bfa-stat-card">
+                    <div class="bfa-stat-icon">🎵</div>
+                    <div class="bfa-stat-content">
+                        <div class="bfa-stat-value"><?php echo number_format($quickStats['today_plays'] ?? 0); ?></div>
+                        <div class="bfa-stat-label"><?php esc_html_e('Plays Today', 'bandfront-analytics'); ?></div>
                     </div>
                 </div>
                 
@@ -166,6 +194,219 @@ class Admin {
                 <h2><?php esc_html_e('Top Content', 'bandfront-analytics'); ?></h2>
                 <div id="bfa-top-posts">
                     <!-- Loaded via AJAX -->
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+    
+    /**
+     * Render play analytics page
+     */
+    public function renderPlayAnalyticsPage(): void {
+        $database = $this->plugin->getDatabase();
+        $musicStats = $database->getMusicStats(date('Y-m-d', strtotime('-7 days')), date('Y-m-d'));
+        
+        ?>
+        <div class="wrap bfa-analytics-wrap">
+            <h1><?php echo esc_html__('Play Analytics', 'bandfront-analytics'); ?></h1>
+            
+            <!-- Music Stats Summary -->
+            <div class="bfa-stats-grid">
+                <div class="bfa-stat-card">
+                    <div class="bfa-stat-icon">▶️</div>
+                    <div class="bfa-stat-content">
+                        <div class="bfa-stat-value"><?php echo number_format($musicStats['total_plays']); ?></div>
+                        <div class="bfa-stat-label"><?php esc_html_e('Total Plays', 'bandfront-analytics'); ?></div>
+                    </div>
+                </div>
+                
+                <div class="bfa-stat-card">
+                    <div class="bfa-stat-icon">🎵</div>
+                    <div class="bfa-stat-content">
+                        <div class="bfa-stat-value"><?php echo number_format($musicStats['unique_tracks']); ?></div>
+                        <div class="bfa-stat-label"><?php esc_html_e('Unique Tracks', 'bandfront-analytics'); ?></div>
+                    </div>
+                </div>
+                
+                <div class="bfa-stat-card">
+                    <div class="bfa-stat-icon">⏱️</div>
+                    <div class="bfa-stat-content">
+                        <div class="bfa-stat-value"><?php echo gmdate("i:s", $musicStats['avg_duration']); ?></div>
+                        <div class="bfa-stat-label"><?php esc_html_e('Avg. Play Duration', 'bandfront-analytics'); ?></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date Range Selector -->
+            <div class="bfa-controls">
+                <select id="bfa-play-date-range" class="bfa-date-range">
+                    <option value="7"><?php esc_html_e('Last 7 days', 'bandfront-analytics'); ?></option>
+                    <option value="30"><?php esc_html_e('Last 30 days', 'bandfront-analytics'); ?></option>
+                    <option value="90"><?php esc_html_e('Last 90 days', 'bandfront-analytics'); ?></option>
+                </select>
+            </div>
+            
+            <!-- Play Chart -->
+            <div class="bfa-chart-container">
+                <canvas id="bfa-play-chart"></canvas>
+            </div>
+            
+            <!-- Top Played Tracks -->
+            <div class="bfa-top-content">
+                <h2><?php esc_html_e('Top Played Tracks', 'bandfront-analytics'); ?></h2>
+                <div id="bfa-top-tracks">
+                    <!-- Loaded via AJAX -->
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+    
+    /**
+     * Render member analytics page
+     */
+    public function renderMemberAnalyticsPage(): void {
+        $database = $this->plugin->getDatabase();
+        $memberStats = $database->getMemberStats(date('Y-m-d', strtotime('-7 days')), date('Y-m-d'));
+        
+        ?>
+        <div class="wrap bfa-analytics-wrap">
+            <h1><?php echo esc_html__('Member Analytics', 'bandfront-analytics'); ?></h1>
+            
+            <!-- Member Stats Summary -->
+            <div class="bfa-stats-grid">
+                <div class="bfa-stat-card">
+                    <div class="bfa-stat-icon">👥</div>
+                    <div class="bfa-stat-content">
+                        <div class="bfa-stat-value"><?php echo number_format($memberStats['total_members'] ?? 0); ?></div>
+                        <div class="bfa-stat-label"><?php esc_html_e('Total Members', 'bandfront-analytics'); ?></div>
+                    </div>
+                </div>
+                
+                <div class="bfa-stat-card">
+                    <div class="bfa-stat-icon">🆕</div>
+                    <div class="bfa-stat-content">
+                        <div class="bfa-stat-value"><?php echo number_format($memberStats['new_members_week'] ?? 0); ?></div>
+                        <div class="bfa-stat-label"><?php esc_html_e('New This Week', 'bandfront-analytics'); ?></div>
+                    </div>
+                </div>
+                
+                <div class="bfa-stat-card">
+                    <div class="bfa-stat-icon">⚡</div>
+                    <div class="bfa-stat-content">
+                        <div class="bfa-stat-value"><?php echo number_format($memberStats['active_members'] ?? 0); ?></div>
+                        <div class="bfa-stat-label"><?php esc_html_e('Active Members', 'bandfront-analytics'); ?></div>
+                    </div>
+                </div>
+                
+                <div class="bfa-stat-card">
+                    <div class="bfa-stat-icon">📊</div>
+                    <div class="bfa-stat-content">
+                        <div class="bfa-stat-value"><?php echo number_format($memberStats['engagement_rate'] ?? 0); ?>%</div>
+                        <div class="bfa-stat-label"><?php esc_html_e('Engagement Rate', 'bandfront-analytics'); ?></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date Range Selector -->
+            <div class="bfa-controls">
+                <select id="bfa-member-date-range" class="bfa-date-range">
+                    <option value="7"><?php esc_html_e('Last 7 days', 'bandfront-analytics'); ?></option>
+                    <option value="30"><?php esc_html_e('Last 30 days', 'bandfront-analytics'); ?></option>
+                    <option value="90"><?php esc_html_e('Last 90 days', 'bandfront-analytics'); ?></option>
+                </select>
+            </div>
+            
+            <!-- Member Growth Chart -->
+            <div class="bfa-chart-container">
+                <h3><?php esc_html_e('Member Growth', 'bandfront-analytics'); ?></h3>
+                <canvas id="bfa-member-chart"></canvas>
+            </div>
+            
+            <!-- Two Column Layout -->
+            <div class="bfa-two-column-layout">
+                <!-- Member Activity -->
+                <div class="bfa-column">
+                    <div class="bfa-content-box">
+                        <h2><?php esc_html_e('Member Activity', 'bandfront-analytics'); ?></h2>
+                        <div id="bfa-member-activity">
+                            <?php if (class_exists('BandfrontMembers')) : ?>
+                                <!-- Will be populated via AJAX -->
+                            <?php else : ?>
+                                <div class="bfa-placeholder-box">
+                                    <div class="bfa-placeholder-icon">🔌</div>
+                                    <h4><?php esc_html_e('Connect Bandfront Members', 'bandfront-analytics'); ?></h4>
+                                    <p><?php esc_html_e('Install and activate the Bandfront Members plugin to see detailed member activity analytics.', 'bandfront-analytics'); ?></p>
+                                    <a href="<?php echo admin_url('plugin-install.php?s=bandfront+members&tab=search&type=term'); ?>" class="button button-primary">
+                                        <?php esc_html_e('Install Members Plugin', 'bandfront-analytics'); ?>
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Membership Tiers -->
+                <div class="bfa-column">
+                    <div class="bfa-content-box">
+                        <h2><?php esc_html_e('Membership Tiers', 'bandfront-analytics'); ?></h2>
+                        <div id="bfa-membership-tiers">
+                            <?php if (class_exists('BandfrontMembers')) : ?>
+                                <!-- Will be populated via AJAX -->
+                            <?php else : ?>
+                                <div class="bfa-placeholder-box">
+                                    <div class="bfa-placeholder-icon">🎯</div>
+                                    <h4><?php esc_html_e('Membership Tier Analytics', 'bandfront-analytics'); ?></h4>
+                                    <p><?php esc_html_e('Track member distribution across different tiers, conversion rates, and tier-specific engagement metrics.', 'bandfront-analytics'); ?></p>
+                                    <ul class="bfa-feature-list">
+                                        <li>📈 Tier growth tracking</li>
+                                        <li>💰 Revenue per tier</li>
+                                        <li>🔄 Upgrade/downgrade patterns</li>
+                                        <li>⏱️ Average tier duration</li>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Member Content Engagement -->
+            <div class="bfa-content-box">
+                <h2><?php esc_html_e('Member Content Engagement', 'bandfront-analytics'); ?></h2>
+                <div id="bfa-member-content-engagement">
+                    <?php if (class_exists('BandfrontMembers')) : ?>
+                        <!-- Will be populated via AJAX -->
+                    <?php else : ?>
+                        <div class="bfa-placeholder-box bfa-placeholder-box-wide">
+                            <div class="bfa-placeholder-icon">📊</div>
+                            <h4><?php esc_html_e('Content Performance Insights', 'bandfront-analytics'); ?></h4>
+                            <p><?php esc_html_e('Understand how members interact with your exclusive content.', 'bandfront-analytics'); ?></p>
+                            <div class="bfa-feature-grid">
+                                <div class="bfa-feature-item">
+                                    <span class="bfa-feature-icon">📄</span>
+                                    <strong><?php esc_html_e('Most Viewed Content', 'bandfront-analytics'); ?></strong>
+                                    <p><?php esc_html_e('Track which member-only posts get the most engagement', 'bandfront-analytics'); ?></p>
+                                </div>
+                                <div class="bfa-feature-item">
+                                    <span class="bfa-feature-icon">⏰</span>
+                                    <strong><?php esc_html_e('Time on Content', 'bandfront-analytics'); ?></strong>
+                                    <p><?php esc_html_e('Measure how long members spend on exclusive content', 'bandfront-analytics'); ?></p>
+                                </div>
+                                <div class="bfa-feature-item">
+                                    <span class="bfa-feature-icon">💬</span>
+                                    <strong><?php esc_html_e('Member Interactions', 'bandfront-analytics'); ?></strong>
+                                    <p><?php esc_html_e('Comments, likes, and shares from members', 'bandfront-analytics'); ?></p>
+                                </div>
+                                <div class="bfa-feature-item">
+                                    <span class="bfa-feature-icon">🎵</span>
+                                    <strong><?php esc_html_e('Music Access', 'bandfront-analytics'); ?></strong>
+                                    <p><?php esc_html_e('Track member-only music plays and downloads', 'bandfront-analytics'); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

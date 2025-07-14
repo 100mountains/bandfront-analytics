@@ -11,7 +11,7 @@ jQuery(document).ready(function($) {
         });
         container.append(canvas);
         
-        // Fetch chart data
+        // Fetch chart data - always use 7 days for admin bar
         $.get({
             url: bfaAdminBar.apiUrl + 'chart',
             data: { days: 7 },
@@ -59,7 +59,7 @@ jQuery(document).ready(function($) {
             }
         });
         
-        // Load additional stats
+        // Load stats summary
         $.get({
             url: bfaAdminBar.apiUrl + 'quick-stats',
             headers: {
@@ -77,8 +77,8 @@ jQuery(document).ready(function($) {
                             <strong>${stats.today_views.toLocaleString()}</strong>
                         </div>
                         <div class="bfa-stat-row">
-                            <span>Yesterday:</span>
-                            <strong>${stats.yesterday_views.toLocaleString()}</strong>
+                            <span>Plays:</span>
+                            <strong>${(stats.today_plays || 0).toLocaleString()}</strong>
                         </div>
                     </div>
                 `;

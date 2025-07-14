@@ -128,12 +128,12 @@ class Plugin {
                       '<span class="ab-label">' . number_format($stats['today_views']) . '</span>',
             'href' => admin_url('admin.php?page=bandfront-analytics'),
             'meta' => [
-                'title' => __('Today\'s Views', 'bandfront-analytics'),
+                'title' => sprintf(__('Views Today: %s', 'bandfront-analytics'), number_format($stats['today_views'])),
                 'class' => 'bfa-admin-bar-stats'
             ]
         ]);
         
-        // Add submenu with mini chart
+        // Add submenu with mini chart (no dropdown selector)
         $adminBar->add_node([
             'id' => 'bfa-stats-chart',
             'parent' => 'bfa-stats',

@@ -218,6 +218,11 @@ class Database {
                     "SELECT COUNT(DISTINCT session_id) FROM {$this->eventsTable} 
                      WHERE timestamp > DATE_SUB(NOW(), INTERVAL 5 MINUTE)"
                 ),
+                'today_plays' => $this->wpdb->get_var($this->wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$this->eventsTable} 
+                     WHERE event_type = 'music_play' AND DATE(timestamp) = %s",
+                    $today
+                )),
             ];
             
             wp_cache_set($cache_key, $stats, '', 60);
@@ -422,5 +427,161 @@ class Database {
              ORDER BY last_seen DESC",
             $since
         ), ARRAY_A);
+    }
+    
+    /**
+     * Get top played tracks
+     */
+    public function getTopTracks(int $limit = 10, int $days = 7): array {
+        $cache_key = "bfa_top_tracks_{$limit}_{$days}";
+        $tracks = wp_cache_get($cache_key);
+        
+        if ($tracks === false) {
+            $startDate = date('Y-m-d', strtotime("-{$days} days"));
+            
+            $tracks = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT 
+                    e.object_id,
+                    COUNT(*) as plays,
+                    AVG(CASE WHEN d.event_type = 'music_duration' THEN d.value ELSE NULL END) as avg_duration
+                 FROM {$this->eventsTable} e
+                 LEFT JOIN {$this->eventsTable} d ON e.session_id = d.session_id 
+                    AND e.object_id = d.object_id 
+                    AND d.event_type = 'music_duration'
+                 WHERE e.event_type = 'music_play' 
+                 AND e.timestamp >= %s
+                 GROUP BY e.object_id 
+                 ORDER BY plays DESC 
+                 LIMIT %d",
+                $startDate,
+                $limit
+            ), ARRAY_A);
+            
+            // Enhance with post data
+            foreach ($tracks as &$track) {
+                $postObj = get_post($track['object_id']);
+                if ($postObj) {
+                    $track['title'] = $postObj->post_title;
+                    $track['url'] = get_permalink($postObj);
+                    $track['type'] = $postObj->post_type;
+                } else {
+                    $track['title'] = __('Unknown Track', 'bandfront-analytics');
+                    $track['url'] = '#';
+                    $track['type'] = 'unknown';
+                }
+                
+                // Format duration
+                $avgDuration = floatval($track['avg_duration']);
+                $track['avg_duration'] = $avgDuration > 0 ? gmdate("i:s", $avgDuration) : '--:--';
+            }
+            
+            wp_cache_set($cache_key, $tracks, '', 300);
+        }
+        
+        return $tracks;
+    }
+    
+    /**
+     * Get member stats
+     */
+    public function getMemberStats(string $startDate, string $endDate): array {
+        $cache_key = "bfa_member_stats_{$startDate}_{$endDate}";
+        $stats = wp_cache_get($cache_key);
+        
+        if ($stats === false) {
+            // Check if Bandfront Members plugin is active
+            if (class_exists('BandfrontMembers')) {
+                // Real stats from member plugin integration
+                $stats = [
+                    'total_members' => $this->getTotalMembers(),
+                    'new_members_week' => $this->getNewMembersCount(7),
+                    'active_members' => $this->getActiveMembers(),
+                    'engagement_rate' => $this->getMemberEngagementRate(),
+                ];
+            } else {
+                // Placeholder stats
+                $stats = [
+                    'total_members' => 0,
+                    'new_members_week' => 0,
+                    'active_members' => 0,
+                    'engagement_rate' => 0,
+                ];
+            }
+            
+            wp_cache_set($cache_key, $stats, '', 300);
+        }
+        
+        return $stats;
+    }
+    
+    /**
+     * Get total members count
+     */
+    private function getTotalMembers(): int {
+        // Get users with the configured backer role
+        $backer_role = get_option('bfm_settings')['backer_role'] ?? 'subscriber';
+        
+        $args = [
+            'role' => $backer_role,
+            'count_total' => true,
+        ];
+        
+        $user_query = new \WP_User_Query($args);
+        return $user_query->get_total();
+    }
+    
+    /**
+     * Get new members in last N days
+     */
+    private function getNewMembersCount(int $days): int {
+        $backer_role = get_option('bfm_settings')['backer_role'] ?? 'subscriber';
+        
+        $args = [
+            'role' => $backer_role,
+            'date_query' => [
+                [
+                    'after' => $days . ' days ago',
+                    'inclusive' => true,
+                ],
+            ],
+            'count_total' => true,
+        ];
+        
+        $user_query = new \WP_User_Query($args);
+        return $user_query->get_total();
+    }
+    
+    /**
+     * Get active members (logged in within 30 days)
+     */
+    private function getActiveMembers(): int {
+        $backer_role = get_option('bfm_settings')['backer_role'] ?? 'subscriber';
+        
+        $args = [
+            'role' => $backer_role,
+            'meta_query' => [
+                [
+                    'key' => 'last_login',
+                    'value' => date('Y-m-d H:i:s', strtotime('-30 days')),
+                    'compare' => '>',
+                    'type' => 'DATETIME'
+                ],
+            ],
+            'count_total' => true,
+        ];
+        
+        $user_query = new \WP_User_Query($args);
+        return $user_query->get_total();
+    }
+    
+    /**
+     * Calculate member engagement rate
+     */
+    private function getMemberEngagementRate(): int {
+        $total = $this->getTotalMembers();
+        if ($total === 0) return 0;
+        
+        $active = $this->getActiveMembers();
+        return round(($active / $total) * 100);
     }
 }

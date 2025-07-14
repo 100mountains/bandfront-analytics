@@ -100,6 +100,53 @@ class Api {
                 ],
             ],
         ]);
+        
+        // Top tracks endpoint
+        register_rest_route('bandfront-analytics/v1', '/top-tracks', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getTopTracks'],
+            'permission_callback' => [$this, 'checkStatsPermission'],
+            'args' => [
+                'limit' => [
+                    'type' => 'integer',
+                    'default' => 10,
+                ],
+                'days' => [
+                    'type' => 'integer',
+                    'default' => 7,
+                ],
+            ],
+        ]);
+        
+        // Member growth endpoint
+        register_rest_route('bandfront-analytics/v1', '/member-growth', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getMemberGrowth'],
+            'permission_callback' => [$this, 'checkStatsPermission'],
+            'args' => [
+                'days' => [
+                    'type' => 'integer',
+                    'default' => 7,
+                ],
+            ],
+        ]);
+        
+        // Member activity endpoint
+        register_rest_route('bandfront-analytics/v1', '/member-activity', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getMemberActivity'],
+            'permission_callback' => [$this, 'checkStatsPermission'],
+            'args' => [
+                'days' => [
+                    'type' => 'integer',
+                    'default' => 7,
+                ],
+                'limit' => [
+                    'type' => 'integer',
+                    'default' => 10,
+                ],
+            ],
+        ]);
     }
     
     /**
@@ -174,10 +221,11 @@ class Api {
      */
     public function getChartData(\WP_REST_Request $request): \WP_REST_Response {
         $days = $request->get_param('days');
+        $metric = $request->get_param('metric') ?: 'pageviews';
         $endDate = date('Y-m-d');
         $startDate = date('Y-m-d', strtotime("-{$days} days"));
         
-        $stats = $this->plugin->getDatabase()->getStats($startDate, $endDate, 'pageviews');
+        $stats = $this->plugin->getDatabase()->getStats($startDate, $endDate, $metric);
         
         // Format for Chart.js
         $labels = [];
@@ -203,11 +251,13 @@ class Api {
             $data[] = $dateMap[$dateStr] ?? 0;
         }
         
+        $label = $metric === 'music_plays' ? __('Music Plays', 'bandfront-analytics') : __('Page Views', 'bandfront-analytics');
+        
         return new \WP_REST_Response([
             'labels' => $labels,
             'datasets' => [
                 [
-                    'label' => __('Page Views', 'bandfront-analytics'),
+                    'label' => $label,
                     'data' => $data,
                     'borderColor' => '#0073aa',
                     'backgroundColor' => 'rgba(0, 115, 170, 0.1)',
@@ -237,6 +287,90 @@ class Api {
         }
         
         return new \WP_REST_Response($topPosts);
+    }
+    
+    /**
+     * Get top tracks
+     */
+    public function getTopTracks(\WP_REST_Request $request): \WP_REST_Response {
+        $limit = $request->get_param('limit');
+        $days = $request->get_param('days');
+        
+        $topTracks = $this->plugin->getDatabase()->getTopTracks($limit, $days);
+        
+        return new \WP_REST_Response($topTracks);
+    }
+    
+    /**
+     * Get member growth data
+     */
+    public function getMemberGrowth(\WP_REST_Request $request): \WP_REST_Response {
+        $days = $request->get_param('days');
+        
+        // Check if Bandfront Members is active
+        if (!class_exists('BandfrontMembers')) {
+            return new \WP_REST_Response([
+                'error' => 'Members plugin not active',
+                'labels' => [],
+                'datasets' => []
+            ], 200);
+        }
+        
+        // Generate sample data for now
+        $labels = [];
+        $newMembers = [];
+        $totalMembers = [];
+        
+        $baseTotal = 150; // Starting number
+        
+        for ($i = $days; $i >= 0; $i--) {
+            $date = date('M j', strtotime("-{$i} days"));
+            $labels[] = $date;
+            
+            // Simulate growth
+            $dailyNew = rand(0, 5);
+            $newMembers[] = $dailyNew;
+            $baseTotal += $dailyNew;
+            $totalMembers[] = $baseTotal;
+        }
+        
+        return new \WP_REST_Response([
+            'labels' => $labels,
+            'datasets' => [
+                [
+                    'label' => __('Total Members', 'bandfront-analytics'),
+                    'data' => $totalMembers,
+                    'borderColor' => '#0073aa',
+                    'backgroundColor' => 'rgba(0, 115, 170, 0.1)',
+                    'tension' => 0.1,
+                ],
+                [
+                    'label' => __('New Members', 'bandfront-analytics'),
+                    'data' => $newMembers,
+                    'borderColor' => '#46b450',
+                    'backgroundColor' => 'rgba(70, 180, 80, 0.1)',
+                    'tension' => 0.1,
+                    'yAxisID' => 'y1',
+                ],
+            ],
+        ]);
+    }
+    
+    /**
+     * Get member activity
+     */
+    public function getMemberActivity(\WP_REST_Request $request): \WP_REST_Response {
+        $days = $request->get_param('days');
+        $limit = $request->get_param('limit');
+        
+        // Check if Bandfront Members is active
+        if (!class_exists('BandfrontMembers')) {
+            return new \WP_REST_Response([], 404);
+        }
+        
+        // This would integrate with the member plugin
+        // For now, return empty array
+        return new \WP_REST_Response([]);
     }
     
     /**

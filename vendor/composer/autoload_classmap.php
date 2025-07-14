@@ -7,4 +7,10 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'bfa\\Admin' => $baseDir . '/src/Admin.php',
+    'bfa\\Api' => $baseDir . '/src/Api.php',
+    'bfa\\Config' => $baseDir . '/src/Config.php',
+    'bfa\\Database' => $baseDir . '/src/Database.php',
+    'bfa\\Plugin' => $baseDir . '/src/Plugin.php',
+    'bfa\\Tracker' => $baseDir . '/src/Tracker.php',
 );

@@ -1,12 +1,12 @@
 {
-    "name": "bandfront/members",
-    "description": "Bandfront Members WordPress plugin - Admin Interface",
+    "name": "bandfront/analytics",
+    "description": "Bandfront Analytics - Lightweight analytics plugin for WordPress",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "authors": [
         {
             "name": "Bandfront",
-            "email": "support@nowhere.com"
+            "email": "support@bandfront.com"
         }
     ],
     "require": {
@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "bfm\\": "src/"
+            "bfa\\": "src/"
         }
     },
     "config": {

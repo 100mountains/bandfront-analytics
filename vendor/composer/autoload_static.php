@@ -9,12 +9,12 @@ class ComposerStaticInit0c405109c72939381025ea518499511b
     public static $prefixLengthsPsr4 = array (
         'b' => 
         array (
-            'bfm\\' => 4,
+            'bfa\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'bfm\\' => 
+        'bfa\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
@@ -22,6 +22,12 @@ class ComposerStaticInit0c405109c72939381025ea518499511b
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'bfa\\Admin' => __DIR__ . '/../..' . '/src/Admin.php',
+        'bfa\\Api' => __DIR__ . '/../..' . '/src/Api.php',
+        'bfa\\Config' => __DIR__ . '/../..' . '/src/Config.php',
+        'bfa\\Database' => __DIR__ . '/../..' . '/src/Database.php',
+        'bfa\\Plugin' => __DIR__ . '/../..' . '/src/Plugin.php',
+        'bfa\\Tracker' => __DIR__ . '/../..' . '/src/Tracker.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

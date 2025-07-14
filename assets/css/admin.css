@@ -5,9 +5,48 @@
 
 .bfa-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
+}
+
+/* 5-column grid for main analytics page */
+.bfa-stats-grid-5 {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px; /* Slightly smaller gap for 5 columns */
+}
+
+/* Responsive breakpoints for 5-column grid */
+@media (max-width: 1600px) {
+    .bfa-stats-grid-5 .bfa-stat-card {
+        padding: 15px; /* Reduce padding on smaller screens */
+    }
+    
+    .bfa-stats-grid-5 .bfa-stat-icon {
+        font-size: 28px; /* Slightly smaller icon */
+    }
+    
+    .bfa-stats-grid-5 .bfa-stat-value {
+        font-size: 24px; /* Slightly smaller value text */
+    }
+}
+
+@media (max-width: 1400px) {
+    .bfa-stats-grid-5 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .bfa-stats-grid-5 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .bfa-stats-grid-5 {
+        grid-template-columns: 1fr;
+    }
 }
 
 .bfa-stat-card {
@@ -19,6 +58,7 @@
     align-items: center;
     gap: 15px;
     transition: box-shadow 0.3s ease;
+    min-width: 0; /* Prevent overflow */
 }
 
 .bfa-stat-card:hover {
@@ -28,10 +68,12 @@
 .bfa-stat-icon {
     font-size: 32px;
     opacity: 0.8;
+    flex-shrink: 0; /* Prevent icon from shrinking */
 }
 
 .bfa-stat-content {
     flex: 1;
+    min-width: 0; /* Allow content to shrink */
 }
 
 .bfa-stat-value {
@@ -39,12 +81,18 @@
     font-weight: 600;
     color: #23282d;
     line-height: 1;
+    white-space: nowrap; /* Prevent number wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .bfa-stat-label {
     color: #666;
     font-size: 14px;
     margin-top: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .bfa-change-positive {
@@ -157,4 +205,145 @@
     color: #666;
     font-style: italic;
     margin-top: 5px;
+}
+
+/* Two Column Layout */
+.bfa-two-column-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 1200px) {
+    .bfa-two-column-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bfa-column {
+    min-width: 0;
+}
+
+/* Content Boxes */
+.bfa-content-box {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.bfa-content-box h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #23282d;
+}
+
+.bfa-content-box h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #23282d;
+}
+
+/* Placeholder Boxes */
+.bfa-placeholder-box {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+}
+
+.bfa-placeholder-box-wide {
+    padding: 60px 40px;
+}
+
+.bfa-placeholder-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.bfa-placeholder-box h4 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    color: #23282d;
+}
+
+.bfa-placeholder-box p {
+    color: #666;
+    margin-bottom: 20px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.bfa-placeholder-box .button {
+    margin-top: 10px;
+}
+
+/* Feature List */
+.bfa-feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    text-align: left;
+    display: inline-block;
+}
+
+.bfa-feature-list li {
+    padding: 8px 0;
+    color: #555;
+}
+
+/* Feature Grid */
+.bfa-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+    text-align: left;
+}
+
+.bfa-feature-item {
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
+.bfa-feature-icon {
+    display: block;
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+.bfa-feature-item strong {
+    display: block;
+    margin-bottom: 10px;
+    color: #23282d;
+    font-size: 16px;
+}
+
+.bfa-feature-item p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Member Analytics Specific */
+.bfa-member-stat-value {
+    font-size: 32px;
+    font-weight: 600;
+    color: #23282d;
+    margin-bottom: 5px;
+}
+
+.bfa-member-stat-label {
+    color: #666;
+    font-size: 14px;
 }
