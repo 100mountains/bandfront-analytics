@@ -1,5 +1,16 @@
 # Bandfront Analytics
 
+bandfront/
+├── bandfront-members/
+│   ├── bandfront-members.php
+│   └── includes/
+├── bandfront-analytics/
+│   ├── bandfront-analytics.php
+│   └── includes/
+└── bandfront-core/
+    ├── bandfront-core.php
+    └── shared/
+
 ## Overview
 Bandfront Analytics is a comprehensive analytics add-on for the Bandfront suite. This plugin provides insightful data and metrics, designed to enhance decision-making and performance optimization for users running WordPress and WooCommerce sites.
 
