@@ -1,0 +1,160 @@
+/* Analytics Dashboard Styles */
+.bfa-analytics-wrap {
+    margin: 20px 20px 20px 0;
+}
+
+.bfa-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.bfa-stat-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: box-shadow 0.3s ease;
+}
+
+.bfa-stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.bfa-stat-icon {
+    font-size: 32px;
+    opacity: 0.8;
+}
+
+.bfa-stat-content {
+    flex: 1;
+}
+
+.bfa-stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #23282d;
+    line-height: 1;
+}
+
+.bfa-stat-label {
+    color: #666;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.bfa-change-positive {
+    color: #46b450;
+}
+
+.bfa-change-negative {
+    color: #dc3232;
+}
+
+.bfa-controls {
+    margin-bottom: 20px;
+}
+
+.bfa-date-range {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.bfa-chart-container {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    height: 400px;
+    position: relative;
+}
+
+.bfa-top-content {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.bfa-top-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.bfa-top-content table {
+    margin: 0;
+}
+
+.bfa-top-content td:last-child {
+    text-align: right;
+    width: 100px;
+}
+
+/* Dashboard Widget */
+.bfa-dashboard-widget {
+    padding: 12px 0;
+}
+
+.bfa-widget-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.bfa-widget-stat {
+    text-align: center;
+}
+
+.bfa-widget-stat strong {
+    display: block;
+    font-size: 24px;
+    color: #23282d;
+    margin-bottom: 5px;
+}
+
+.bfa-widget-stat span {
+    color: #666;
+    font-size: 12px;
+}
+
+.bfa-widget-chart {
+    height: 150px;
+    margin-bottom: 15px;
+}
+
+.bfa-widget-footer {
+    margin: 0;
+    text-align: center;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* Settings Page */
+.form-table th {
+    width: 200px;
+}
+
+.form-table td label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.form-table input[type="number"] {
+    width: 100px;
+}
+
+.form-table .description {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}

@@ -6,44 +6,22 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit0c405109c72939381025ea518499511b
 {
-    public static $files = array (
-        '6c44a28f253a89966f9513c83e37c30b' => __DIR__ . '/../..' . '/builders/builders.php',
-    );
-
     public static $prefixLengthsPsr4 = array (
         'b' => 
         array (
-            'bfp\\' => 4,
+            'bfm\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'bfp\\' => 
+        'bfm\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
     );
 
     public static $classMap = array (
-        'BFPMP3' => __DIR__ . '/..' . '/php-mp3/class.mp3.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'bfp\\Admin' => __DIR__ . '/../..' . '/src/Admin.php',
-        'bfp\\Audio' => __DIR__ . '/../..' . '/src/Audio.php',
-        'bfp\\Config' => __DIR__ . '/../..' . '/src/Config.php',
-        'bfp\\CoverRenderer' => __DIR__ . '/../..' . '/src/CoverRenderer.php',
-        'bfp\\Hooks' => __DIR__ . '/../..' . '/src/Hooks.php',
-        'bfp\\Modules\\GoogleDrive\\GoogleDriveClient' => __DIR__ . '/../..' . '/src/Modules/GoogleDrive/GoogleDriveClient.php',
-        'bfp\\Player' => __DIR__ . '/../..' . '/src/Player.php',
-        'bfp\\Plugin' => __DIR__ . '/../..' . '/src/Plugin.php',
-        'bfp\\Utils\\Analytics' => __DIR__ . '/../..' . '/src/Utils/Analytics.php',
-        'bfp\\Utils\\Cache' => __DIR__ . '/../..' . '/src/Utils/Cache.php',
-        'bfp\\Utils\\Cloud' => __DIR__ . '/../..' . '/src/Utils/Cloud.php',
-        'bfp\\Utils\\Files' => __DIR__ . '/../..' . '/src/Utils/Files.php',
-        'bfp\\Utils\\Preview' => __DIR__ . '/../..' . '/src/Utils/Preview.php',
-        'bfp\\Utils\\Update' => __DIR__ . '/../..' . '/src/Utils/Update.php',
-        'bfp\\Utils\\Utils' => __DIR__ . '/../..' . '/src/Utils/Utils.php',
-        'bfp\\Widgets\\PlaylistWidget' => __DIR__ . '/../..' . '/src/Widgets/PlaylistWidget.php',
-        'bfp\\WooCommerce' => __DIR__ . '/../..' . '/src/WooCommerce.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

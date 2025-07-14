@@ -1,18 +1,17 @@
 <?php
-namespace bfm;
+namespace bfa;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
 /**
- * Config Class - WordPress 2025 compliant settings management
- * Uses WordPress options table with proper naming conventions
+ * Config Class for Bandfront Analytics
  */
 class Config {
     
     private array $settings = [];
-    private string $optionName = 'bfm_settings';
+    private string $optionName = 'bfa_settings';
     private array $defaults = [];
     
     public function __construct() {
@@ -21,46 +20,47 @@ class Config {
     }
     
     /**
-     * Initialize default settings with proper naming
+     * Initialize default settings
      */
     private function initializeDefaults(): void {
         $this->defaults = [
-            // Core Membership Settings
-            'membership_enabled' => true,
-            'backer_role' => 'subscriber',
-            'posts_page' => '',
-            'join_page' => '',  // New setting for join/signup page
-            'default_membership_tier' => 'basic',
+            // Core tracking settings
+            'tracking_enabled' => true,
+            'track_logged_in_users' => true,
+            'exclude_admins' => true,
+            'anonymize_ip' => true,
+            'respect_dnt' => true,
             
-            // Content Access Settings
-            'content_protection_enabled' => true,
-            'restricted_content_message' => __('This content is for members only', 'bandfront-members'),
-            'teaser_content_length' => 200,
-            'protect_post_types' => ['post'],
-            'default_content_access_level' => 'public',
-            'hide_restricted_from_lists' => false,
-            'show_member_badge' => true,
+            // Performance settings
+            'sampling_rate' => 0.1, // 10% sampling when over threshold
+            'sampling_threshold' => 10000, // Daily views before sampling kicks in
+            'batch_size' => 100, // Events per batch write
+            'realtime_buffer_size' => 50, // Events before flush
+            'realtime_timeout' => 5, // Seconds before force flush
             
-            // Payment Gateway Settings
-            'stripe_enabled' => false,
-            'stripe_publishable_key' => '',
-            'stripe_secret_key' => '',
-            'stripe_webhook_secret' => '',
-            'stripe_test_mode' => true,
+            // Data retention
+            'retention_days' => 365, // Keep raw data for 1 year
+            'archive_after_days' => 30, // Archive after 30 days
+            'aggregate_interval' => 3600, // Hourly aggregation
             
-            'paypal_enabled' => false,
-            'paypal_client_id' => '',
-            'paypal_client_secret' => '',
-            'paypal_sandbox_mode' => true,
-            'paypal_webhook_id' => '',
+            // Cache settings
+            'cache_ttl' => 300, // 5 minutes cache
+            'use_object_cache' => true,
             
-            'woocommerce_enabled' => false,
-            'woocommerce_membership_products' => [],
-            'woocommerce_sync_roles' => true,
+            // Display settings
+            'show_admin_bar_widget' => true,
+            'show_dashboard_widget' => true,
+            'default_date_range' => 'last_7_days',
+            'chart_colors' => [
+                'primary' => '#0073aa',
+                'secondary' => '#23282d',
+                'accent' => '#00a0d2',
+            ],
             
-            'manual_payments_enabled' => true,
-            'require_payment_approval' => false,
-            'payment_currency' => 'USD',
+            // Music tracking
+            'track_music_plays' => true,
+            'track_play_duration' => true,
+            'track_completion_rate' => true,
             'payment_gateway_priority' => 'stripe', // Which gateway to show first
             
             // Membership Tier Settings

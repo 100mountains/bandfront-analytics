@@ -1,0 +1,52 @@
+/* Admin Bar Widget Styles */
+#wp-admin-bar-bfa-stats .ab-icon {
+    margin-right: 6px !important;
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+#wp-admin-bar-bfa-stats .ab-label {
+    font-weight: bold;
+}
+
+#wp-admin-bar-bfa-stats-chart {
+    padding: 10px !important;
+}
+
+.bfa-mini-chart-container {
+    width: 200px;
+    height: 50px;
+    margin-bottom: 10px;
+}
+
+.bfa-admin-bar-stats {
+    width: 200px;
+    font-size: 12px;
+}
+
+.bfa-stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bfa-stat-row:last-child {
+    border-bottom: none;
+}
+
+.bfa-stat-row span {
+    color: #ccc;
+}
+
+.bfa-stat-row strong {
+    color: #fff;
+}
+
+#wpadminbar #wp-admin-bar-bfa-stats-default {
+    background: #32373c !important;
+}
+
+#wpadminbar #wp-admin-bar-bfa-stats:hover #wp-admin-bar-bfa-stats-default {
+    background: #1d2327 !important;
+}
