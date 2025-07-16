@@ -14,10 +14,60 @@ class Tracker {
     
     public function __construct(Plugin $plugin) {
         $this->plugin = $plugin;
+        
+        // Server-side tracking
+        add_action('wp', [$this, 'trackServerSidePageview']);
+        
+        // Client-side tracking setup
+        add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
+        add_action('wp_footer', [$this, 'outputTrackingData']);
     }
     
     /**
-     * Output tracking data in footer
+     * Track pageview server-side (for non-JS users)
+     */
+    public function trackServerSidePageview(): void {
+        if (!is_singular() || is_admin()) {
+            return;
+        }
+        
+        // Let JavaScript handle it if enabled
+        if ($this->plugin->getConfig()->get('use_javascript_tracking', true)) {
+            return;
+        }
+        
+        do_action('bfa_track_pageview', get_the_ID());
+    }
+    
+    /**
+     * Enqueue tracking scripts
+     */
+    public function enqueueScripts(): void {
+        if (!$this->shouldTrack()) {
+            return;
+        }
+        
+        wp_enqueue_script(
+            'bfa-tracker',
+            plugin_dir_url($this->plugin->getFile()) . 'assets/js/tracker.js',
+            [],
+            $this->plugin->getVersion(),
+            true
+        );
+        
+        // Prepare tracking configuration
+        $config = $this->plugin->getConfig();
+        
+        wp_localize_script('bfa-tracker', 'bfaTracker', [
+            'apiUrl' => rest_url('bandfront-analytics/v1/'),
+            'nonce' => wp_create_nonce('wp_rest'),
+            'trackingEnabled' => true,
+            'sampling' => $config->shouldSample() ? $config->get('sampling_rate', 1) : 1,
+        ]);
+    }
+    
+    /**
+     * Output page-specific tracking data
      */
     public function outputTrackingData(): void {
         if (!$this->shouldTrack()) {
@@ -60,27 +110,17 @@ class Tracker {
             return false;
         }
         
-        // Check DNT header
-        if ($config->get('respect_dnt', true) && !empty($_SERVER['HTTP_DNT']) && $_SERVER['HTTP_DNT'] == '1') {
-            return false;
-        }
-        
-        // Check if user agent is a bot
-        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        if ($config->isBot($userAgent)) {
-            return false;
-        }
-        
         return true;
     }
     
     /**
-     * Determine the current page type
+     * Get the current page type
      */
     private function getPageType(): string {
         if (is_front_page()) return 'home';
-        if (is_single()) return 'single';
-        if (is_page()) return 'page';
+        if (is_singular('product')) return 'product';
+        if (is_singular('post')) return 'post';
+        if (is_singular('page')) return 'page';
         if (is_archive()) return 'archive';
         if (is_search()) return 'search';
         if (is_404()) return '404';
@@ -89,28 +129,30 @@ class Tracker {
     }
     
     /**
-     * Check if post has audio files
+     * Check if a product has audio files
      */
-    private function hasAudioFiles(int $postId): bool {
+    private function hasAudioFiles(int $productId): bool {
         // Check for WooCommerce product audio files
+        $audioFormats = ['mp3', 'wav', 'ogg', 'm4a'];
+        
+        // Check product meta for audio files
+        $hasAudio = false;
+        
+        // Check if product has downloadable files with audio extensions
         if (function_exists('wc_get_product')) {
-            $product = wc_get_product($postId);
-            if ($product && method_exists($product, 'get_downloads')) {
+            $product = wc_get_product($productId);
+            if ($product && $product->is_downloadable()) {
                 $downloads = $product->get_downloads();
                 foreach ($downloads as $download) {
-                    if (preg_match('/\.(mp3|ogg|wav|m4a)$/i', $download['file'])) {
-                        return true;
+                    $ext = pathinfo($download->get_file(), PATHINFO_EXTENSION);
+                    if (in_array(strtolower($ext), $audioFormats)) {
+                        $hasAudio = true;
+                        break;
                     }
                 }
             }
         }
         
-        // Check for audio in post content
-        $content = get_post_field('post_content', $postId);
-        if (strpos($content, '<audio') !== false || strpos($content, '[audio') !== false) {
-            return true;
-        }
-        
-        return false;
+        return $hasAudio;
     }
 }

@@ -12,17 +12,24 @@ if (!defined('ABSPATH')) {
  */
 class Plugin {
     
+    private string $file;
+    private string $version = '1.0.0';
+    
     private ?Config $config = null;
-    private ?Admin $admin = null;
+    private ?Database $database = null;
+    private ?Analytics $analytics = null;
     private ?Tracker $tracker = null;
     private ?Api $api = null;
-    private ?Database $database = null;
+    private ?Admin $admin = null;
     private ?Columns $columns = null;
     
-    public function __construct() {
+    public function __construct(string $file) {
+        $this->file = $file;
+        
         // Initialize components
         $this->config = new Config();
         $this->database = new Database();
+        $this->analytics = new Analytics($this);
         $this->tracker = new Tracker($this);
         $this->api = new Api($this);
         
@@ -207,5 +214,9 @@ class Plugin {
     
     public function getColumns(): Columns {
         return $this->columns;
+    }
+    
+    public function getAnalytics(): Analytics {
+        return $this->analytics;
     }
 }
