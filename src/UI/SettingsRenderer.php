@@ -40,9 +40,9 @@ class SettingsRenderer {
         );
         
         $this->tabManager->registerTab(
-            'rest-api',
-            __('REST API', 'bandfront-analytics'),
-            [$this, 'renderRestApiTab'],
+            'database-monitor',
+            __('Database Monitor', 'bandfront-analytics'),
+            [$this, 'renderDatabaseMonitorTab'],
             30
         );
         
@@ -194,52 +194,52 @@ class SettingsRenderer {
     }
     
     /**
-     * Render REST API tab
+     * Render Database Monitor tab
      */
-    public function renderRestApiTab(): void {
+    public function renderDatabaseMonitorTab(): void {
         $config = $this->plugin->getConfig();
-        $apiEnabled = $config->get('enable_api', true);
+        $database = $this->plugin->getDatabase();
         ?>
-        <h2><?php esc_html_e('REST API Settings', 'bandfront-analytics'); ?></h2>
+        <h2><?php esc_html_e('Database Monitor', 'bandfront-analytics'); ?></h2>
         
         <table class="form-table">
             <tr>
-                <th scope="row"><?php esc_html_e('API Access', 'bandfront-analytics'); ?></th>
+                <th scope="row"><?php esc_html_e('Live Monitoring', 'bandfront-analytics'); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" name="enable_api" value="1" id="bfa-enable-api"
-                               <?php checked($apiEnabled); ?>>
-                        <?php esc_html_e('Enable REST API endpoints', 'bandfront-analytics'); ?>
+                        <input type="checkbox" name="enable_db_monitor" value="1" id="bfa-enable-db-monitor"
+                               <?php checked($config->get('enable_db_monitor', true)); ?>>
+                        <?php esc_html_e('Enable database activity monitoring', 'bandfront-analytics'); ?>
                     </label>
                 </td>
             </tr>
         </table>
         
-        <?php if ($apiEnabled): ?>
-            <!-- REST Traffic Monitor -->
+        <?php if ($config->get('enable_db_monitor', true)): ?>
+            <!-- Database Activity Monitor -->
             <div class="bfa-api-monitor">
-                <h3><?php esc_html_e('API Traffic Monitor', 'bandfront-analytics'); ?></h3>
-                <div class="bfa-traffic-box" id="bfa-api-traffic">
+                <h3><?php esc_html_e('Database Activity Monitor', 'bandfront-analytics'); ?></h3>
+                <div class="bfa-traffic-box" id="bfa-db-activity">
                     <div class="bfa-traffic-header">
                         <span class="bfa-traffic-status">● <?php esc_html_e('Live', 'bandfront-analytics'); ?></span>
-                        <button type="button" class="button button-small" id="bfa-clear-traffic">
+                        <button type="button" class="button button-small" id="bfa-clear-db-activity">
                             <?php esc_html_e('Clear', 'bandfront-analytics'); ?>
                         </button>
                     </div>
-                    <div class="bfa-traffic-log" id="bfa-traffic-log">
-                        <!-- Traffic will be loaded here via JavaScript -->
+                    <div class="bfa-traffic-log" id="bfa-db-activity-log">
+                        <!-- Database activity will be loaded here via JavaScript -->
                     </div>
                 </div>
             </div>
             
-            <!-- Available Endpoints -->
+            <!-- Database Schema -->
             <div class="bfa-api-endpoints">
-                <h3><?php esc_html_e('Available Endpoints', 'bandfront-analytics'); ?></h3>
-                <?php $this->renderApiEndpoints(); ?>
+                <h3><?php esc_html_e('Database Schema', 'bandfront-analytics'); ?></h3>
+                <?php $this->renderDatabaseSchema(); ?>
             </div>
         <?php else: ?>
             <div class="notice notice-info inline">
-                <p><?php esc_html_e('Enable the REST API to view endpoints and monitor traffic.', 'bandfront-analytics'); ?></p>
+                <p><?php esc_html_e('Enable database monitoring to view activity and schema information.', 'bandfront-analytics'); ?></p>
             </div>
         <?php endif; ?>
         <?php
@@ -283,74 +283,15 @@ class SettingsRenderer {
     }
     
     /**
-     * Render API endpoints list
+     * Render database schema information
      */
-    private function renderApiEndpoints(): void {
-        // Get our registered endpoints directly from the API class
-        $namespace = 'bandfront-analytics/v1';
+    private function renderDatabaseSchema(): void {
+        global $wpdb;
         
-        // Define our endpoints manually since we know what they are
-        $endpoints = [
-            [
-                'route' => '/bandfront-analytics/v1/track',
-                'methods' => ['POST'],
-                'description' => __('Track analytics events', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/stats',
-                'methods' => ['GET'],
-                'description' => __('Get statistics data', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/quick-stats',
-                'methods' => ['GET'],
-                'description' => __('Get quick stats summary', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/chart',
-                'methods' => ['GET'],
-                'description' => __('Get chart data', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/top-posts',
-                'methods' => ['GET'],
-                'description' => __('Get top posts by views', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/top-tracks',
-                'methods' => ['GET'],
-                'description' => __('Get top music tracks', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/music-stats',
-                'methods' => ['GET'],
-                'description' => __('Get music statistics', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/active-users',
-                'methods' => ['GET'],
-                'description' => __('Get currently active users', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/member-stats',
-                'methods' => ['GET'],
-                'description' => __('Get member statistics', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/member-growth',
-                'methods' => ['GET'],
-                'description' => __('Get member growth data', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/member-activity',
-                'methods' => ['GET'],
-                'description' => __('Get member activity data', 'bandfront-analytics'),
-            ],
-            [
-                'route' => '/bandfront-analytics/v1/user-logins',
-                'methods' => ['GET'],
-                'description' => __('Get user login statistics', 'bandfront-analytics'),
-            ],
+        // Get actual analytics tables
+        $tables = [
+            'bfa_events' => __('Analytics Events', 'bandfront-analytics'),
+            'bfa_stats' => __('Aggregated Statistics', 'bandfront-analytics'),
         ];
         
         ?>
@@ -358,56 +299,189 @@ class SettingsRenderer {
             <p class="description">
                 <?php 
                 printf(
-                    esc_html__('Total endpoints available: %d', 'bandfront-analytics'), 
-                    count($endpoints)
+                    esc_html__('Total tables: %d', 'bandfront-analytics'), 
+                    count($tables)
                 ); 
                 ?>
             </p>
             
-            <?php foreach ($endpoints as $endpoint): ?>
-                <div class="bfa-endpoint-item">
+            <?php foreach ($tables as $table => $description): ?>
+                <?php
+                $full_table_name = $wpdb->prefix . $table;
+                $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$full_table_name}'") === $full_table_name;
+                
+                if ($table_exists) {
+                    $columns = $wpdb->get_results("SHOW FULL COLUMNS FROM `{$full_table_name}`");
+                    $row_count = $wpdb->get_var("SELECT COUNT(*) FROM `{$full_table_name}`");
+                    $indexes = $wpdb->get_results("SHOW INDEX FROM `{$full_table_name}`");
+                } else {
+                    $columns = [];
+                    $row_count = 0;
+                    $indexes = [];
+                }
+                ?>
+                <div class="bfa-endpoint-item bfa-database-table">
                     <div class="bfa-endpoint-route">
-                        <code><?php echo esc_html($endpoint['route']); ?></code>
-                        <?php if ($endpoint['description']): ?>
-                            <span class="description"><?php echo esc_html($endpoint['description']); ?></span>
-                        <?php endif; ?>
+                        <code><?php echo esc_html($full_table_name); ?></code>
+                        <span class="description"><?php echo esc_html($description); ?></span>
                     </div>
                     <div class="bfa-endpoint-methods">
-                        <?php foreach ($endpoint['methods'] as $method): ?>
-                            <span class="bfa-method-badge bfa-method-<?php echo esc_attr(strtolower($method)); ?>">
-                                <?php echo esc_html($method); ?>
+                        <?php if ($table_exists): ?>
+                            <span class="bfa-method-badge bfa-method-get">
+                                <?php echo number_format($row_count); ?> <?php esc_html_e('rows', 'bandfront-analytics'); ?>
                             </span>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <span class="bfa-method-badge" style="background: #dc3232;">
+                                <?php esc_html_e('Table not found', 'bandfront-analytics'); ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
-                    <div class="bfa-endpoint-url">
-                        <small><?php echo esc_html(rest_url($endpoint['route'])); ?></small>
-                    </div>
+                    
+                    <?php if ($table_exists && !empty($columns)): ?>
+                        <!-- Detailed field list -->
+                        <div class="bfa-table-fields">
+                            <h4><?php esc_html_e('Table Structure', 'bandfront-analytics'); ?></h4>
+                            <table class="wp-list-table widefat fixed striped">
+                                <thead>
+                                    <tr>
+                                        <th><?php esc_html_e('Field', 'bandfront-analytics'); ?></th>
+                                        <th><?php esc_html_e('Type', 'bandfront-analytics'); ?></th>
+                                        <th><?php esc_html_e('Null', 'bandfront-analytics'); ?></th>
+                                        <th><?php esc_html_e('Key', 'bandfront-analytics'); ?></th>
+                                        <th><?php esc_html_e('Default', 'bandfront-analytics'); ?></th>
+                                        <th><?php esc_html_e('Extra', 'bandfront-analytics'); ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($columns as $column): ?>
+                                        <tr>
+                                            <td><code><?php echo esc_html($column->Field); ?></code></td>
+                                            <td><small><?php echo esc_html($column->Type); ?></small></td>
+                                            <td><?php echo esc_html($column->Null); ?></td>
+                                            <td>
+                                                <?php if ($column->Key === 'PRI'): ?>
+                                                    <span class="bfa-key-badge bfa-key-primary">PRIMARY</span>
+                                                <?php elseif ($column->Key === 'UNI'): ?>
+                                                    <span class="bfa-key-badge bfa-key-unique">UNIQUE</span>
+                                                <?php elseif ($column->Key === 'MUL'): ?>
+                                                    <span class="bfa-key-badge bfa-key-index">INDEX</span>
+                                                <?php else: ?>
+                                                    -
+                                                <?php endif; ?>
+                                            </td>
+                                            <td><small><?php echo esc_html($column->Default ?? 'NULL'); ?></small></td>
+                                            <td><small><?php echo esc_html($column->Extra); ?></small></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                            
+                            <?php if (!empty($indexes)): ?>
+                                <h5><?php esc_html_e('Indexes', 'bandfront-analytics'); ?></h5>
+                                <div class="bfa-index-list">
+                                    <?php 
+                                    $index_groups = [];
+                                    foreach ($indexes as $index) {
+                                        $index_groups[$index->Key_name][] = $index->Column_name;
+                                    }
+                                    ?>
+                                    <?php foreach ($index_groups as $index_name => $columns): ?>
+                                        <div class="bfa-index-item">
+                                            <code><?php echo esc_html($index_name); ?></code>
+                                            <span class="description">(<?php echo esc_html(implode(', ', $columns)); ?>)</span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <!-- Table size info -->
+                            <?php
+                            $table_info = $wpdb->get_row("
+                                SELECT 
+                                    ROUND(data_length / 1024 / 1024, 2) AS data_size_mb,
+                                    ROUND(index_length / 1024 / 1024, 2) AS index_size_mb
+                                FROM information_schema.tables
+                                WHERE table_schema = DATABASE()
+                                AND table_name = '{$full_table_name}'
+                            ");
+                            ?>
+                            <?php if ($table_info): ?>
+                                <div class="bfa-table-meta">
+                                    <span><?php esc_html_e('Data Size:', 'bandfront-analytics'); ?> <?php echo esc_html($table_info->data_size_mb); ?> MB</span>
+                                    <span><?php esc_html_e('Index Size:', 'bandfront-analytics'); ?> <?php echo esc_html($table_info->index_size_mb); ?> MB</span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         </div>
-        <?php
-    }
-    
-    /**
-     * Get endpoint description based on route
-     */
-    private function getEndpointDescription(string $route): string {
-        $descriptions = [
-            '/bandfront-analytics/v1/track' => __('Track analytics events', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/stats' => __('Get statistics data', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/quick-stats' => __('Get quick stats summary', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/chart' => __('Get chart data', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/top-posts' => __('Get top posts by views', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/top-tracks' => __('Get top music tracks', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/music-stats' => __('Get music statistics', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/active-users' => __('Get currently active users', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/member-stats' => __('Get member statistics', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/member-growth' => __('Get member growth data', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/member-activity' => __('Get member activity data', 'bandfront-analytics'),
-            '/bandfront-analytics/v1/user-logins' => __('Get user login statistics', 'bandfront-analytics'),
-        ];
         
-        return $descriptions[$route] ?? '';
+        <style>
+            .bfa-database-table {
+                margin-bottom: 20px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #ddd;
+            }
+            .bfa-table-fields {
+                margin-top: 15px;
+                background: #f9f9f9;
+                padding: 15px;
+                border-radius: 4px;
+            }
+            .bfa-table-fields h4 {
+                margin-top: 0;
+                margin-bottom: 10px;
+                color: #23282d;
+            }
+            .bfa-table-fields h5 {
+                margin-top: 15px;
+                margin-bottom: 10px;
+                color: #23282d;
+            }
+            .bfa-key-badge {
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            .bfa-key-primary {
+                background: #0073aa;
+                color: white;
+            }
+            .bfa-key-unique {
+                background: #46b450;
+                color: white;
+            }
+            .bfa-key-index {
+                background: #826eb4;
+                color: white;
+            }
+            .bfa-index-list {
+                background: white;
+                padding: 10px;
+                border-radius: 3px;
+                border: 1px solid #e5e5e5;
+            }
+            .bfa-index-item {
+                padding: 5px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            .bfa-index-item:last-child {
+                border-bottom: none;
+            }
+            .bfa-table-meta {
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid #e5e5e5;
+                color: #666;
+                font-size: 13px;
+            }
+            .bfa-table-meta span {
+                margin-right: 15px;
+            }
+        </style>
+        <?php
     }
     
     /**
@@ -439,9 +513,9 @@ class SettingsRenderer {
                 ];
                 break;
                 
-            case 'rest-api':
+            case 'database-monitor':
                 $settings = [
-                    'enable_api' => !empty($_POST['enable_api']),
+                    'enable_db_monitor' => !empty($_POST['enable_db_monitor']),
                 ];
                 break;
                 

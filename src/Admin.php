@@ -29,6 +29,7 @@ class Admin {
         add_action('wp_dashboard_setup', [$this, 'addDashboardWidget']);
         add_action('wp_ajax_bfa_save_settings', [$this, 'ajaxSaveSettings']);
         add_action('wp_ajax_bfa_get_api_traffic', [$this, 'ajaxGetApiTraffic']);
+        add_action('wp_ajax_bfa_get_db_activity', [$this, 'ajaxGetDbActivity']);
     }
     
     /**
@@ -454,6 +455,50 @@ class Admin {
         
         wp_send_json_success([
             'traffic' => array_slice($traffic, -50), // Last 50 requests
+        ]);
+    }
+    
+    /**
+     * AJAX handler for getting database activity
+     */
+    public function ajaxGetDbActivity(): void {
+        check_ajax_referer('bfa_ajax', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        global $wpdb;
+        
+        // Get recent events from database
+        $recent_events = $wpdb->get_results(
+            "SELECT 
+                event_type,
+                object_id,
+                object_type,
+                value,
+                created_at,
+                user_agent_hash,
+                referrer_domain
+            FROM {$wpdb->prefix}bfa_events 
+            ORDER BY created_at DESC 
+            LIMIT 50"
+        );
+        
+        // Format for display
+        $activity = [];
+        foreach ($recent_events as $event) {
+            $activity[] = [
+                'time' => human_time_diff(strtotime($event->created_at), current_time('timestamp')) . ' ago',
+                'type' => $event->event_type,
+                'object' => $event->object_type . '#' . $event->object_id,
+                'value' => $event->value,
+                'referrer' => $event->referrer_domain ?: 'direct',
+            ];
+        }
+        
+        wp_send_json_success([
+            'activity' => $activity,
         ]);
     }
     

@@ -8,9 +8,13 @@ $baseDir = dirname($vendorDir);
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'bfa\\Admin' => $baseDir . '/src/Admin.php',
+    'bfa\\Analytics' => $baseDir . '/src/Analytics.php',
     'bfa\\Api' => $baseDir . '/src/Api.php',
     'bfa\\Config' => $baseDir . '/src/Config.php',
     'bfa\\Database' => $baseDir . '/src/Database.php',
     'bfa\\Plugin' => $baseDir . '/src/Plugin.php',
     'bfa\\Tracker' => $baseDir . '/src/Tracker.php',
+    'bfa\\UI\\Columns' => $baseDir . '/src/UI/Columns.php',
+    'bfa\\UI\\SettingsRenderer' => $baseDir . '/src/UI/SettingsRenderer.php',
+    'bfa\\UI\\TabManager' => $baseDir . '/src/UI/TabManager.php',
 );

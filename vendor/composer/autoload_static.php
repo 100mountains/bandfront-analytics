@@ -23,11 +23,15 @@ class ComposerStaticInit0c405109c72939381025ea518499511b
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'bfa\\Admin' => __DIR__ . '/../..' . '/src/Admin.php',
+        'bfa\\Analytics' => __DIR__ . '/../..' . '/src/Analytics.php',
         'bfa\\Api' => __DIR__ . '/../..' . '/src/Api.php',
         'bfa\\Config' => __DIR__ . '/../..' . '/src/Config.php',
         'bfa\\Database' => __DIR__ . '/../..' . '/src/Database.php',
         'bfa\\Plugin' => __DIR__ . '/../..' . '/src/Plugin.php',
         'bfa\\Tracker' => __DIR__ . '/../..' . '/src/Tracker.php',
+        'bfa\\UI\\Columns' => __DIR__ . '/../..' . '/src/UI/Columns.php',
+        'bfa\\UI\\SettingsRenderer' => __DIR__ . '/../..' . '/src/UI/SettingsRenderer.php',
+        'bfa\\UI\\TabManager' => __DIR__ . '/../..' . '/src/UI/TabManager.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
