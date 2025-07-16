@@ -497,3 +497,29 @@
     color: #666;
     word-break: break-all;
 }
+
+/* Database Test Actions */
+.bfa-db-test-actions {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+}
+
+.bfa-db-test-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.bfa-db-test-actions .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-top: 3px;
+}
+
+.bfa-test-message {
+    font-weight: 500;
+}

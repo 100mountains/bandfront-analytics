@@ -2,6 +2,7 @@
 namespace bfa\UI;
 
 use bfa\Plugin;
+use bfa\Admin\DatabaseMonitor;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -202,46 +203,137 @@ class SettingsRenderer {
         ?>
         <h2><?php esc_html_e('Database Monitor', 'bandfront-analytics'); ?></h2>
         
-        <table class="form-table">
+        <!-- Test Action Buttons -->
+        <div class="bfa-db-test-actions" style="margin-bottom: 20px; padding: 15px; background: #f0f0f1; border: 1px solid #c3c4c7; border-radius: 4px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="button" class="button button-primary" id="bfa-test-events">
+                    <span class="dashicons dashicons-randomize" style="margin-top: 3px;"></span>
+                    <?php _e('Generate Test Events', 'bandfront-analytics'); ?>
+                </button>
+                
+                <button type="button" class="button" id="bfa-clean-events">
+                    <span class="dashicons dashicons-trash" style="margin-top: 3px;"></span>
+                    <?php _e('Clean Test Data', 'bandfront-analytics'); ?>
+                </button>
+                
+                <span class="spinner" style="float: none; visibility: hidden;"></span>
+                <span class="bfa-test-message" style="margin-left: 10px; color: #3c434a;"></span>
+            </div>
+        </div>
+        
+        <table class="form-table" role="presentation">
             <tr>
-                <th scope="row"><?php esc_html_e('Live Monitoring', 'bandfront-analytics'); ?></th>
+                <th scope="row"><?php _e('Live Monitoring', 'bandfront-analytics'); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" name="enable_db_monitor" value="1" id="bfa-enable-db-monitor"
-                               <?php checked($config->get('enable_db_monitor', true)); ?>>
-                        <?php esc_html_e('Enable database activity monitoring', 'bandfront-analytics'); ?>
+                        <input type="checkbox" name="enable_db_monitoring" value="1" <?php checked($config->get('enable_db_monitoring', true)); ?>>
+                        <?php _e('Enable database activity monitoring', 'bandfront-analytics'); ?>
                     </label>
                 </td>
             </tr>
         </table>
         
-        <?php if ($config->get('enable_db_monitor', true)): ?>
-            <!-- Database Activity Monitor -->
-            <div class="bfa-api-monitor">
-                <h3><?php esc_html_e('Database Activity Monitor', 'bandfront-analytics'); ?></h3>
-                <div class="bfa-traffic-box" id="bfa-db-activity">
-                    <div class="bfa-traffic-header">
-                        <span class="bfa-traffic-status">● <?php esc_html_e('Live', 'bandfront-analytics'); ?></span>
-                        <button type="button" class="button button-small" id="bfa-clear-db-activity">
-                            <?php esc_html_e('Clear', 'bandfront-analytics'); ?>
-                        </button>
-                    </div>
-                    <div class="bfa-traffic-log" id="bfa-db-activity-log">
-                        <!-- Database activity will be loaded here via JavaScript -->
-                    </div>
+        <!-- Database Activity Monitor -->
+        <div class="bfa-api-monitor">
+            <h3><?php _e('Database Activity Monitor', 'bandfront-analytics'); ?></h3>
+            <div class="bfa-traffic-box" id="bfa-db-activity">
+                <div class="bfa-traffic-header">
+                    <span class="bfa-traffic-status">● <?php _e('Live', 'bandfront-analytics'); ?></span>
+                    <button type="button" class="button button-small" id="bfa-clear-db-activity">
+                        <?php _e('Clear', 'bandfront-analytics'); ?>
+                    </button>
+                </div>
+                <div class="bfa-traffic-log" id="bfa-db-activity-log">
+                    <div class="bfa-traffic-empty"><?php _e('Waiting for database activity...', 'bandfront-analytics'); ?></div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Database Schema Section -->
+        <div class="bfa-api-endpoints">
+            <h3><?php esc_html_e('Database Schema', 'bandfront-analytics'); ?></h3>
+            <?php $this->renderDatabaseSchema(); ?>
+        </div>
+        
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Test Events Handler
+            $('#bfa-test-events').on('click', function() {
+                var $button = $(this);
+                var $spinner = $('.bfa-db-test-actions .spinner');
+                var $message = $('.bfa-test-message');
+                
+                $button.prop('disabled', true);
+                $spinner.css('visibility', 'visible');
+                $message.text('');
+                
+                $.post(ajaxurl, {
+                    action: 'bfa_generate_test_events',
+                    nonce: '<?php echo wp_create_nonce('bfa_test_actions'); ?>'
+                }, function(response) {
+                    $button.prop('disabled', false);
+                    $spinner.css('visibility', 'hidden');
+                    
+                    if (response.success) {
+                        $message.html('<span style="color: #46b450;">' + response.data.message + '</span>');
+                        // Trigger refresh of activity monitor if it exists
+                        if (typeof loadDbActivity === 'function') {
+                            loadDbActivity();
+                        }
+                    } else {
+                        $message.html('<span style="color: #dc3232;">' + (response.data.message || 'Error generating test events') + '</span>');
+                    }
+                    
+                    // Clear message after 5 seconds
+                    setTimeout(function() {
+                        $message.fadeOut(function() {
+                            $(this).text('').show();
+                        });
+                    }, 5000);
+                });
+            });
             
-            <!-- Database Schema -->
-            <div class="bfa-api-endpoints">
-                <h3><?php esc_html_e('Database Schema', 'bandfront-analytics'); ?></h3>
-                <?php $this->renderDatabaseSchema(); ?>
-            </div>
-        <?php else: ?>
-            <div class="notice notice-info inline">
-                <p><?php esc_html_e('Enable database monitoring to view activity and schema information.', 'bandfront-analytics'); ?></p>
-            </div>
-        <?php endif; ?>
+            // Clean Events Handler
+            $('#bfa-clean-events').on('click', function() {
+                if (!confirm('<?php _e('Are you sure you want to delete all test data? This cannot be undone.', 'bandfront-analytics'); ?>')) {
+                    return;
+                }
+                
+                var $button = $(this);
+                var $spinner = $('.bfa-db-test-actions .spinner');
+                var $message = $('.bfa-test-message');
+                
+                $button.prop('disabled', true);
+                $spinner.css('visibility', 'visible');
+                $message.text('');
+                
+                $.post(ajaxurl, {
+                    action: 'bfa_clean_test_events',
+                    nonce: '<?php echo wp_create_nonce('bfa_test_actions'); ?>'
+                }, function(response) {
+                    $button.prop('disabled', false);
+                    $spinner.css('visibility', 'hidden');
+                    
+                    if (response.success) {
+                        $message.html('<span style="color: #46b450;">' + response.data.message + '</span>');
+                        // Trigger refresh of activity monitor if it exists
+                        if (typeof loadDbActivity === 'function') {
+                            loadDbActivity();
+                        }
+                    } else {
+                        $message.html('<span style="color: #dc3232;">' + (response.data.message || 'Error cleaning test data') + '</span>');
+                    }
+                    
+                    // Clear message after 5 seconds
+                    setTimeout(function() {
+                        $message.fadeOut(function() {
+                            $(this).text('').show();
+                        });
+                    }, 5000);
+                });
+            });
+        });
+        </script>
         <?php
     }
     
