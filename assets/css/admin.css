@@ -347,3 +347,153 @@
     color: #666;
     font-size: 14px;
 }
+
+/* Tab Navigation */
+.bfa-nav-tab-wrapper {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ccc;
+}
+
+.bfa-settings-wrap .nav-tab {
+    font-size: 14px;
+    padding: 10px 20px;
+}
+
+.bfa-tab-content {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-top: none;
+    margin-bottom: 20px;
+}
+
+/* REST API Monitor */
+.bfa-api-monitor {
+    margin-top: 30px;
+}
+
+.bfa-traffic-box {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.bfa-traffic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    background: #fff;
+}
+
+.bfa-traffic-status {
+    color: #46b450;
+    font-weight: 600;
+}
+
+.bfa-traffic-log {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.bfa-traffic-entry {
+    display: grid;
+    grid-template-columns: 80px 60px 1fr 150px;
+    gap: 10px;
+    padding: 8px;
+    background: #fff;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    align-items: center;
+}
+
+.bfa-traffic-time {
+    color: #666;
+}
+
+.bfa-traffic-method {
+    text-align: center;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.bfa-method-get {
+    background: #e7f3ff;
+    color: #0073aa;
+}
+
+.bfa-method-post {
+    background: #d4edda;
+    color: #155724;
+}
+
+.bfa-traffic-route {
+    font-family: monospace;
+    color: #333;
+}
+
+.bfa-traffic-user {
+    color: #666;
+    text-align: right;
+}
+
+.bfa-no-traffic {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+/* API Endpoints List */
+.bfa-api-endpoints {
+    margin-top: 30px;
+}
+
+.bfa-endpoints-list {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.bfa-endpoint-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.bfa-endpoint-route {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.bfa-endpoint-route code {
+    background: #f1f1f1;
+    padding: 3px 8px;
+    border-radius: 3px;
+}
+
+.bfa-endpoint-methods {
+    margin-bottom: 5px;
+}
+
+.bfa-method-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+.bfa-endpoint-url {
+    color: #666;
+    word-break: break-all;
+}

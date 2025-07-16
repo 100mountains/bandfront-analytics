@@ -47,10 +47,15 @@ class Config {
             'cache_ttl' => 300, // 5 minutes cache
             'use_object_cache' => true,
             
-            // Display settings
+            // Admin Display settings
             'show_admin_bar_widget' => true,
             'show_dashboard_widget' => true,
+            'show_post_columns' => true,
+            'show_product_columns' => true,
+            'show_user_columns' => true,
             'default_date_range' => 'last_7_days',
+            
+            // Chart settings
             'chart_colors' => [
                 'primary' => '#0073aa',
                 'secondary' => '#23282d',
@@ -61,7 +66,11 @@ class Config {
             'track_music_plays' => true,
             'track_play_duration' => true,
             'track_completion_rate' => true,
-            'payment_gateway_priority' => 'stripe', // Which gateway to show first
+            
+            // API Settings
+            'enable_api' => true,
+            'api_rate_limit' => 100,
+            'api_authentication' => false,
             
             // Membership Tier Settings
             'membership_tiers' => [
@@ -146,8 +155,6 @@ class Config {
             'enable_debug_mode' => false,
             'log_level' => 'error',
             'database_prefix' => 'bfm_',
-            'enable_api' => false,
-            'api_rate_limit' => 100,
             
             // Invitation System Settings
             'enable_invitations' => false,
@@ -279,5 +286,51 @@ class Config {
     
     public function updateGlobalAttrs(array $attrs): void {
         $this->save($attrs);
+    }
+    
+    /**
+     * Check if bot based on user agent
+     */
+    public function isBot(string $userAgent): bool {
+        $bots = [
+            'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+            'yandexbot', 'facebookexternalhit', 'twitterbot', 'linkedinbot',
+            'whatsapp', 'applebot', 'pingdom', 'uptimerobot'
+        ];
+        
+        $userAgentLower = strtolower($userAgent);
+        foreach ($bots as $bot) {
+            if (strpos($userAgentLower, $bot) !== false) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Check if sampling should be applied
+     */
+    public function shouldSample(): bool {
+        // Only sample if over threshold
+        $dailyViews = $GLOBALS['BandfrontAnalytics']->getDatabase()->getTodayPageviews();
+        if ($dailyViews < $this->get('sampling_threshold', 10000)) {
+            return false;
+        }
+        
+        // Apply sampling rate
+        $rate = $this->get('sampling_rate', 0.1);
+        return (mt_rand(1, 100) / 100) > $rate;
+    }
+    
+    /**
+     * Debug method to get all current settings
+     */
+    public function debug(): array {
+        return [
+            'saved_settings' => $this->settings,
+            'defaults' => $this->defaults,
+            'merged' => array_merge($this->defaults, $this->settings),
+        ];
     }
 }

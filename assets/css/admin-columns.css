@@ -1,0 +1,110 @@
+/**
+ * Bandfront Analytics - Admin Column Styles
+ */
+
+/* Column Headers */
+.widefat .column-bfa_views,
+.widefat .column-bfa_play_counter {
+    width: 70px !important;
+    text-align: center;
+}
+
+/* Fix column header alignment */
+.wp-list-table thead th.column-bfa_views,
+.wp-list-table thead th.column-bfa_play_counter {
+    text-align: center;
+    padding: 8px 10px;
+}
+
+.column-bfa_views .dashicons,
+.column-bfa_play_counter .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #656565;
+    vertical-align: middle;
+}
+
+/* Column Content */
+.column-bfa_views,
+.column-bfa_play_counter {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+.bfa-view-counter,
+.bfa-play-counter {
+    display: inline-block;
+    text-align: center;
+    font-weight: 600;
+    color: #23282d;
+    font-size: 13px;
+}
+
+.bfa-play-counter {
+    color: #0073aa;
+}
+
+/* Hover Effects */
+.wp-list-table tbody tr:hover .bfa-view-counter {
+    color: #000;
+}
+
+.wp-list-table tbody tr:hover .bfa-play-counter {
+    color: #005a87;
+}
+
+/* Sortable Column Indicators */
+.wp-list-table .column-bfa_views.sorted,
+.wp-list-table .column-bfa_play_counter.sorted {
+    background-color: #f0f0f1;
+}
+
+/* Zero values - make them lighter */
+.bfa-view-counter:contains("0"),
+.bfa-play-counter:contains("0") {
+    opacity: 0.5;
+}
+
+/* User Columns */
+.column-bfa_last_login {
+    width: 150px;
+}
+
+.column-bfa_login_count {
+    width: 80px;
+    text-align: center;
+}
+
+.column-bfa_login_count .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #656565;
+    vertical-align: middle;
+}
+
+/* Online indicator */
+.bfa-online-indicator {
+    font-size: 10px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+/* Login count styling */
+.column-bfa_login_count strong {
+    color: #0073aa;
+    font-size: 14px;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .column-bfa_views,
+    .column-bfa_play_counter,
+    .column-bfa_last_login,
+    .column-bfa_login_count,
+    .wp-list-table .column-bfa_views,
+    .wp-list-table .column-bfa_play_counter {
+        display: none !important;
+    }
+}

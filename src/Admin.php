@@ -1,6 +1,8 @@
 <?php
 namespace bfa;
 
+use bfa\UI\SettingsRenderer;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -11,6 +13,7 @@ if (!defined('ABSPATH')) {
 class Admin {
     
     private Plugin $plugin;
+    private ?SettingsRenderer $settingsRenderer = null;
     
     public function __construct(Plugin $plugin) {
         $this->plugin = $plugin;
@@ -25,6 +28,7 @@ class Admin {
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
         add_action('wp_dashboard_setup', [$this, 'addDashboardWidget']);
         add_action('wp_ajax_bfa_save_settings', [$this, 'ajaxSaveSettings']);
+        add_action('wp_ajax_bfa_get_api_traffic', [$this, 'ajaxGetApiTraffic']);
     }
     
     /**
@@ -105,6 +109,17 @@ class Admin {
             BFA_VERSION,
             true
         );
+        
+        // Add settings-specific script
+        if ($hook === 'analytics_page_bandfront-analytics-settings') {
+            wp_enqueue_script(
+                'bfa-settings',
+                BFA_PLUGIN_URL . 'assets/js/settings.js',
+                ['jquery'],
+                BFA_VERSION,
+                true
+            );
+        }
         
         wp_localize_script('bfa-admin', 'bfaAdmin', [
             'apiUrl' => rest_url('bandfront-analytics/v1/'),
@@ -417,87 +432,29 @@ class Admin {
      * Render settings page
      */
     public function renderSettingsPage(): void {
-        if (isset($_POST['bfa_save_settings']) && wp_verify_nonce($_POST['bfa_nonce'], 'bfa_settings')) {
-            $this->saveSettings();
+        if (!$this->settingsRenderer) {
+            $this->settingsRenderer = new SettingsRenderer($this->plugin);
         }
         
-        $config = $this->plugin->getConfig();
-        ?>
-        <div class="wrap">
-            <h1><?php esc_html_e('Analytics Settings', 'bandfront-analytics'); ?></h1>
-            
-            <form method="post" action="">
-                <?php wp_nonce_field('bfa_settings', 'bfa_nonce'); ?>
-                
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Enable Tracking', 'bandfront-analytics'); ?></th>
-                        <td>
-                            <label>
-                                <input type="checkbox" name="tracking_enabled" value="1" 
-                                       <?php checked($config->get('tracking_enabled')); ?>>
-                                <?php esc_html_e('Enable analytics tracking', 'bandfront-analytics'); ?>
-                            </label>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Privacy Settings', 'bandfront-analytics'); ?></th>
-                        <td>
-                            <label>
-                                <input type="checkbox" name="exclude_admins" value="1" 
-                                       <?php checked($config->get('exclude_admins')); ?>>
-                                <?php esc_html_e('Exclude administrators from tracking', 'bandfront-analytics'); ?>
-                            </label><br>
-                            
-                            <label>
-                                <input type="checkbox" name="respect_dnt" value="1" 
-                                       <?php checked($config->get('respect_dnt')); ?>>
-                                <?php esc_html_e('Respect Do Not Track header', 'bandfront-analytics'); ?>
-                            </label><br>
-                            
-                            <label>
-                                <input type="checkbox" name="anonymize_ip" value="1" 
-                                       <?php checked($config->get('anonymize_ip')); ?>>
-                                <?php esc_html_e('Anonymize IP addresses', 'bandfront-analytics'); ?>
-                            </label>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Performance', 'bandfront-analytics'); ?></th>
-                        <td>
-                            <label>
-                                <?php esc_html_e('Sampling threshold', 'bandfront-analytics'); ?><br>
-                                <input type="number" name="sampling_threshold" 
-                                       value="<?php echo esc_attr($config->get('sampling_threshold')); ?>">
-                                <p class="description">
-                                    <?php esc_html_e('Start sampling when daily views exceed this number', 'bandfront-analytics'); ?>
-                                </p>
-                            </label>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php esc_html_e('Data Retention', 'bandfront-analytics'); ?></th>
-                        <td>
-                            <label>
-                                <?php esc_html_e('Keep data for', 'bandfront-analytics'); ?><br>
-                                <input type="number" name="retention_days" 
-                                       value="<?php echo esc_attr($config->get('retention_days')); ?>">
-                                <?php esc_html_e('days', 'bandfront-analytics'); ?>
-                            </label>
-                        </td>
-                    </tr>
-                </table>
-                
-                <p class="submit">
-                    <input type="submit" name="bfa_save_settings" class="button-primary" 
-                           value="<?php esc_attr_e('Save Settings', 'bandfront-analytics'); ?>">
-                </p>
-            </form>
-        </div>
-        <?php
+        $this->settingsRenderer->render();
+    }
+    
+    /**
+     * AJAX handler for getting API traffic
+     */
+    public function ajaxGetApiTraffic(): void {
+        check_ajax_referer('bfa_ajax', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        // Get recent API traffic from transient
+        $traffic = get_transient('bfa_api_traffic') ?: [];
+        
+        wp_send_json_success([
+            'traffic' => array_slice($traffic, -50), // Last 50 requests
+        ]);
     }
     
     /**

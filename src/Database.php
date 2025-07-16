@@ -584,4 +584,183 @@ class Database {
         $active = $this->getActiveMembers();
         return round(($active / $total) * 100);
     }
+    
+    /**
+     * Get play count for a specific product
+     */
+    public function getProductPlayCount(int $productId): int {
+        $cache_key = 'bfa_product_plays_' . $productId;
+        $plays = wp_cache_get($cache_key);
+        
+        if ($plays === false) {
+            $plays = $this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT COUNT(*) 
+                 FROM {$this->eventsTable} 
+                 WHERE object_id = %d 
+                 AND event_type = 'music_play'",
+                $productId
+            ));
+            
+            wp_cache_set($cache_key, $plays, '', 300); // 5 minute cache
+        }
+        
+        return (int) $plays;
+    }
+    
+    /**
+     * Update cached play counts for products
+     * Called periodically to refresh meta values
+     */
+    public function updateProductPlayCounts(): void {
+        // Get all products with play events
+        $products = $this->wpdb->get_results(
+            "SELECT object_id, COUNT(*) as play_count 
+             FROM {$this->eventsTable} 
+             WHERE event_type = 'music_play' 
+             AND object_type = 'product'
+             GROUP BY object_id"
+        );
+        
+        foreach ($products as $product) {
+            update_post_meta($product->object_id, '_bfa_play_counter', $product->play_count);
+        }
+        
+        // Also update view counts for all posts
+        $views = $this->wpdb->get_results(
+            "SELECT object_id, COUNT(*) as view_count 
+             FROM {$this->eventsTable} 
+             WHERE event_type = 'pageview' 
+             GROUP BY object_id"
+        );
+        
+        foreach ($views as $view) {
+            update_post_meta($view->object_id, '_bfa_total_views', $view->view_count);
+        }
+    }
+    
+    /**
+     * Get user login stats
+     */
+    public function getUserLoginStats(int $userId = 0): array {
+        $cache_key = 'bfa_user_login_stats_' . $userId;
+        $stats = wp_cache_get($cache_key);
+        
+        if ($stats === false) {
+            if ($userId > 0) {
+                // Stats for specific user
+                $stats = [
+                    'total_logins' => $this->wpdb->get_var($this->wpdb->prepare(
+                        "SELECT COUNT(*) FROM {$this->eventsTable} 
+                         WHERE event_type = 'user_login' 
+                         AND object_id = %d",
+                        $userId
+                    )),
+                    'last_login' => $this->wpdb->get_var($this->wpdb->prepare(
+                        "SELECT MAX(timestamp) FROM {$this->eventsTable} 
+                         WHERE event_type = 'user_login' 
+                         AND object_id = %d",
+                        $userId
+                    )),
+                ];
+            } else {
+                // Site-wide stats
+                $stats = [
+                    'total_logins_today' => $this->wpdb->get_var($this->wpdb->prepare(
+                        "SELECT COUNT(*) FROM {$this->eventsTable} 
+                         WHERE event_type = 'user_login' 
+                         AND DATE(timestamp) = %s",
+                        current_time('Y-m-d')
+                    )),
+                    'unique_users_today' => $this->wpdb->get_var($this->wpdb->prepare(
+                        "SELECT COUNT(DISTINCT object_id) FROM {$this->eventsTable} 
+                         WHERE event_type = 'user_login' 
+                         AND DATE(timestamp) = %s",
+                        current_time('Y-m-d')
+                    )),
+                    'active_users_hour' => $this->wpdb->get_var(
+                        "SELECT COUNT(DISTINCT object_id) FROM {$this->eventsTable} 
+                         WHERE event_type = 'user_login' 
+                         AND timestamp > DATE_SUB(NOW(), INTERVAL 1 HOUR)"
+                    ),
+                ];
+            }
+            
+            wp_cache_set($cache_key, $stats, '', 300);
+        }
+        
+        return $stats;
+    }
+    
+    /**
+     * Get most active users
+     */
+    public function getMostActiveUsers(int $limit = 10, int $days = 30): array {
+        $cache_key = "bfa_most_active_users_{$limit}_{$days}";
+        $users = wp_cache_get($cache_key);
+        
+        if ($users === false) {
+            $startDate = date('Y-m-d', strtotime("-{$days} days"));
+            
+            $users = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT 
+                    object_id as user_id,
+                    COUNT(*) as login_count,
+                    MAX(timestamp) as last_login
+                 FROM {$this->eventsTable} 
+                 WHERE event_type = 'user_login' 
+                 AND timestamp >= %s
+                 GROUP BY object_id 
+                 ORDER BY login_count DESC 
+                 LIMIT %d",
+                $startDate,
+                $limit
+            ), ARRAY_A);
+            
+            // Enhance with user data
+            foreach ($users as &$user) {
+                $userObj = get_user_by('id', $user['user_id']);
+                if ($userObj) {
+                    $user['display_name'] = $userObj->display_name;
+                    $user['email'] = $userObj->user_email;
+                    $user['roles'] = implode(', ', $userObj->roles);
+                }
+            }
+            
+            wp_cache_set($cache_key, $users, '', 300);
+        }
+        
+        return $users;
+    }
+    
+    /**
+     * Get user activity timeline
+     */
+    public function getUserActivityTimeline(int $userId, int $days = 7): array {
+        $cache_key = "bfa_user_activity_{$userId}_{$days}";
+        $activity = wp_cache_get($cache_key);
+        
+        if ($activity === false) {
+            $startDate = date('Y-m-d', strtotime("-{$days} days"));
+            
+            $activity = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT 
+                    DATE(timestamp) as activity_date,
+                    COUNT(CASE WHEN event_type = 'pageview' THEN 1 END) as pageviews,
+                    COUNT(CASE WHEN event_type = 'music_play' THEN 1 END) as music_plays,
+                    COUNT(CASE WHEN event_type = 'user_login' THEN 1 END) as logins
+                 FROM {$this->eventsTable} 
+                 WHERE object_id = %d 
+                 AND object_type = 'user'
+                 AND timestamp >= %s
+                 GROUP BY activity_date 
+                 ORDER BY activity_date ASC",
+                $userId,
+                $startDate
+            ), ARRAY_A);
+            
+            wp_cache_set($cache_key, $activity, '', 300);
+        }
+        
+        return $activity;
+    }
 }

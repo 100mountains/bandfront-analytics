@@ -14,14 +14,24 @@ class Api {
     
     public function __construct(Plugin $plugin) {
         $this->plugin = $plugin;
+        
+        // Add REST request tracking
+        add_filter('rest_pre_dispatch', [$this, 'trackRestRequest'], 10, 3);
     }
     
     /**
      * Register REST API routes
      */
     public function registerRoutes(): void {
+        // Check if API is enabled
+        if (!$this->plugin->getConfig()->get('enable_api', true)) {
+            return;
+        }
+        
+        $namespace = 'bandfront-analytics/v1';
+        
         // Track event endpoint
-        register_rest_route('bandfront-analytics/v1', '/track', [
+        register_rest_route($namespace, '/track', [
             'methods' => 'POST',
             'callback' => [$this, 'trackEvent'],
             'permission_callback' => '__return_true',
@@ -44,7 +54,7 @@ class Api {
         ]);
         
         // Stats endpoint
-        register_rest_route('bandfront-analytics/v1', '/stats', [
+        register_rest_route($namespace, '/stats', [
             'methods' => 'GET',
             'callback' => [$this, 'getStats'],
             'permission_callback' => [$this, 'checkStatsPermission'],
@@ -65,14 +75,14 @@ class Api {
         ]);
         
         // Quick stats endpoint
-        register_rest_route('bandfront-analytics/v1', '/quick-stats', [
+        register_rest_route($namespace, '/quick-stats', [
             'methods' => 'GET',
             'callback' => [$this, 'getQuickStats'],
             'permission_callback' => [$this, 'checkStatsPermission'],
         ]);
         
         // Chart data endpoint
-        register_rest_route('bandfront-analytics/v1', '/chart', [
+        register_rest_route($namespace, '/chart', [
             'methods' => 'GET',
             'callback' => [$this, 'getChartData'],
             'permission_callback' => [$this, 'checkStatsPermission'],
@@ -81,11 +91,15 @@ class Api {
                     'type' => 'integer',
                     'default' => 7,
                 ],
+                'metric' => [
+                    'type' => 'string',
+                    'default' => 'pageviews',
+                ],
             ],
         ]);
         
         // Top posts endpoint
-        register_rest_route('bandfront-analytics/v1', '/top-posts', [
+        register_rest_route($namespace, '/top-posts', [
             'methods' => 'GET',
             'callback' => [$this, 'getTopPosts'],
             'permission_callback' => [$this, 'checkStatsPermission'],
@@ -102,7 +116,7 @@ class Api {
         ]);
         
         // Top tracks endpoint
-        register_rest_route('bandfront-analytics/v1', '/top-tracks', [
+        register_rest_route($namespace, '/top-tracks', [
             'methods' => 'GET',
             'callback' => [$this, 'getTopTracks'],
             'permission_callback' => [$this, 'checkStatsPermission'],
@@ -118,8 +132,44 @@ class Api {
             ],
         ]);
         
-        // Member growth endpoint
-        register_rest_route('bandfront-analytics/v1', '/member-growth', [
+        // Music stats endpoint
+        register_rest_route($namespace, '/music-stats', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getMusicStats'],
+            'permission_callback' => [$this, 'checkStatsPermission'],
+            'args' => [
+                'start_date' => [
+                    'type' => 'string',
+                    'format' => 'date',
+                ],
+                'end_date' => [
+                    'type' => 'string',
+                    'format' => 'date',
+                ],
+            ],
+        ]);
+        
+        // Active users endpoint
+        register_rest_route($namespace, '/active-users', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getActiveUsers'],
+            'permission_callback' => [$this, 'checkStatsPermission'],
+            'args' => [
+                'minutes' => [
+                    'type' => 'integer',
+                    'default' => 5,
+                ],
+            ],
+        ]);
+        
+        // Member stats endpoints
+        register_rest_route($namespace, '/member-stats', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getMemberStats'],
+            'permission_callback' => [$this, 'checkStatsPermission'],
+        ]);
+        
+        register_rest_route($namespace, '/member-growth', [
             'methods' => 'GET',
             'callback' => [$this, 'getMemberGrowth'],
             'permission_callback' => [$this, 'checkStatsPermission'],
@@ -131,8 +181,7 @@ class Api {
             ],
         ]);
         
-        // Member activity endpoint
-        register_rest_route('bandfront-analytics/v1', '/member-activity', [
+        register_rest_route($namespace, '/member-activity', [
             'methods' => 'GET',
             'callback' => [$this, 'getMemberActivity'],
             'permission_callback' => [$this, 'checkStatsPermission'],
@@ -144,6 +193,19 @@ class Api {
                 'limit' => [
                     'type' => 'integer',
                     'default' => 10,
+                ],
+            ],
+        ]);
+        
+        // User login stats endpoint
+        register_rest_route($namespace, '/user-logins', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getUserLoginStats'],
+            'permission_callback' => [$this, 'checkStatsPermission'],
+            'args' => [
+                'user_id' => [
+                    'type' => 'integer',
+                    'default' => 0,
                 ],
             ],
         ]);
@@ -302,6 +364,55 @@ class Api {
     }
     
     /**
+     * Get music stats
+     */
+    public function getMusicStats(\WP_REST_Request $request): \WP_REST_Response {
+        $startDate = $request->get_param('start_date') ?: date('Y-m-d', strtotime('-7 days'));
+        $endDate = $request->get_param('end_date') ?: date('Y-m-d');
+        
+        $stats = $this->plugin->getDatabase()->getMusicStats($startDate, $endDate);
+        
+        return new \WP_REST_Response($stats);
+    }
+    
+    /**
+     * Get active users
+     */
+    public function getActiveUsers(\WP_REST_Request $request): \WP_REST_Response {
+        $minutes = $request->get_param('minutes');
+        
+        $users = $this->plugin->getDatabase()->getActiveUsers($minutes);
+        
+        return new \WP_REST_Response([
+            'count' => count($users),
+            'users' => $users,
+        ]);
+    }
+    
+    /**
+     * Get member stats
+     */
+    public function getMemberStats(\WP_REST_Request $request): \WP_REST_Response {
+        $startDate = date('Y-m-d', strtotime('-7 days'));
+        $endDate = date('Y-m-d');
+        
+        $stats = $this->plugin->getDatabase()->getMemberStats($startDate, $endDate);
+        
+        return new \WP_REST_Response($stats);
+    }
+    
+    /**
+     * Get user login stats
+     */
+    public function getUserLoginStats(\WP_REST_Request $request): \WP_REST_Response {
+        $userId = $request->get_param('user_id');
+        
+        $stats = $this->plugin->getDatabase()->getUserLoginStats($userId);
+        
+        return new \WP_REST_Response($stats);
+    }
+    
+    /**
      * Get member growth data
      */
     public function getMemberGrowth(\WP_REST_Request $request): \WP_REST_Response {
@@ -393,5 +504,44 @@ class Api {
         }
         
         return $_SESSION['bfa_session_id'];
+    }
+    
+    /**
+     * Track REST API requests
+     */
+    public function trackRestRequest($result, $server, $request) {
+        // Only track our namespace
+        $route = $request->get_route();
+        if (strpos($route, '/bandfront-analytics/') !== 0) {
+            return $result;
+        }
+        
+        // Only track if API monitoring is enabled
+        if (!$this->plugin->getConfig()->get('enable_api', true)) {
+            return $result;
+        }
+        
+        // Get existing traffic
+        $traffic = get_transient('bfa_api_traffic') ?: [];
+        
+        // Add new request
+        $traffic[] = [
+            'timestamp' => current_time('mysql'),
+            'method' => $request->get_method(),
+            'route' => $route,
+            'params' => $request->get_params(),
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            'user_id' => get_current_user_id(),
+        ];
+        
+        // Keep only last 100 requests
+        if (count($traffic) > 100) {
+            $traffic = array_slice($traffic, -100);
+        }
+        
+        // Save for 1 hour
+        set_transient('bfa_api_traffic', $traffic, HOUR_IN_SECONDS);
+        
+        return $result;
     }
 }
