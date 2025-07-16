@@ -15,6 +15,7 @@ Bandfront Analytics provides a powerful hook-based system for other WordPress pl
 7. [Advanced Integration](#advanced-integration)
 8. [Best Practices](#best-practices)
 9. [API Reference](#api-reference)
+10. [Testing and Development](#testing-and-development)
 
 ## Quick Start
 
@@ -695,6 +696,57 @@ $data = [
     ]
 ];
 ```
+
+## Testing and Development
+
+### Using Test Data Generation
+
+Bandfront Analytics includes built-in tools for generating test data to help you develop and test your integrations:
+
+```php
+// Check if test utilities are available
+if (class_exists('BandfrontAnalytics\Utils\DbTest')) {
+    // Generate 100 test events
+    $result = \BandfrontAnalytics\Utils\DbTest::generateTestEvents(100);
+    
+    echo "Generated {$result['generated']} test events";
+}
+```
+
+### Cleaning Test Data
+
+After testing, you can clean up all test data:
+
+```php
+// Clean all test events
+if (class_exists('BandfrontAnalytics\Utils\DbClean')) {
+    $result = \BandfrontAnalytics\Utils\DbClean::cleanTestEvents();
+    
+    echo "Cleaned {$result['events_deleted']} test events";
+}
+```
+
+### Identifying Test Events
+
+All test events include a `test_event: true` flag in their metadata:
+
+```php
+// When tracking events in development, mark them as test events
+do_action('bfa_track', 'my_custom_event', [
+    'object_id' => 123,
+    'meta' => [
+        'test_event' => true,  // This marks it for easy cleanup
+        'other_data' => 'value'
+    ]
+]);
+```
+
+### Development Best Practices
+
+1. **Always mark test events**: Include `'test_event' => true` in metadata during development
+2. **Use the Database Monitor**: Check Analytics > Database Monitor to see your events in real-time
+3. **Clean up regularly**: Use the clean function or the UI button to remove test data
+4. **Test with realistic data**: The test generator creates realistic event patterns
 
 ## Support
 
