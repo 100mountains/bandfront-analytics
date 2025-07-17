@@ -307,27 +307,6 @@ class Database {
     }
     
     /**
-     * Clean old data based on retention days
-     */
-    public function cleanOldData(int $retentionDays): void {
-        global $wpdb;
-        
-        $cutoffDate = date('Y-m-d', strtotime("-{$retentionDays} days"));
-        
-        // Delete old events
-        $wpdb->query($wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}bfa_events WHERE created_at < %s",
-            $cutoffDate
-        ));
-        
-        // Delete old stats
-        $wpdb->query($wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}bfa_stats WHERE stat_date < %s",
-            $cutoffDate
-        ));
-    }
-    
-    /**
      * Get top posts for a period
      */
     public function getTopPosts(int $limit = 10, int $days = 7): array {

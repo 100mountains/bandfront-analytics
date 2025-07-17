@@ -1,109 +1,71 @@
 <?php
 namespace bfa;
 
+use bfa\UI\Columns;
 use bfa\Admin\Admin;
-// use bfa\Tracking\Tracker;
-// use bfa\API\RestAPI;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Main plugin class
+ */
 class Plugin {
-    private static ?Plugin $instance = null;
     
     private Config $config;
     private Database $database;
+    private Tracker $tracker;
     private ?Admin $admin = null;
-    // private ?Tracker $tracker = null;
-    // private ?RestAPI $api = null;
+    private ?Api $api = null;
+    private ?Columns $columns = null;
     
-    /**
-     * Plugin file path
-     */
-    private string $file;
-    
-    /**
-     * Constructor
-     */
     public function __construct(string $file) {
-        $this->file = $file;
-        $this->initComponents();
-        $this->initHooks();
+        $this->config = new Config();
+        $this->database = new Database();
+        $this->tracker = new Tracker($this);
+        
+        $this->init();
     }
     
     /**
-     * Initialize components
+     * Initialize the plugin
      */
-    private function initComponents(): void {
-        // Core components
-        $this->config = new Config();
-        $this->database = new Database();
+    private function init(): void {
+        // Initialize UI components
+        $this->columns = new Columns($this);
         
-        // Initialize tracking - commented out until Tracker class is created
-        // if (class_exists('bfa\Tracking\Tracker')) {
-        //     $this->tracker = new Tracker($this);
-        // }
-        
-        // Initialize admin interface
+        // Admin initialization
         if (is_admin()) {
             $this->admin = new Admin($this);
         }
         
-        // Initialize REST API - commented out until RestAPI class is created
-        // if (class_exists('bfa\API\RestAPI')) {
-        //     $this->api = new RestAPI($this);
-        // }
-    }
-    
-    /**
-     * Initialize hooks
-     */
-    private function initHooks(): void {
-        register_activation_hook($this->file, [$this, 'activate']);
-        register_deactivation_hook($this->file, [$this, 'deactivate']);
+        // API initialization
+        $this->api = new Api($this);
         
-        // Add other global hooks here
-        add_action('init', [$this, 'init']);
+        // Register hooks
+        $this->registerHooks();
     }
     
     /**
-     * Plugin initialization
+     * Register plugin hooks
      */
-    public function init(): void {
-        // Load textdomain
-        load_plugin_textdomain('bandfront-analytics', false, dirname(plugin_basename($this->file)) . '/languages');
-    }
-    
-    /**
-     * Get singleton instance
-     */
-    public static function getInstance(string $file = ''): Plugin {
-        if (self::$instance === null) {
-            self::$instance = new self($file);
+    private function registerHooks(): void {
+        // Cleanup hook
+        add_action('bfa_cleanup', [$this, 'performCleanup']);
+        
+        // Schedule cleanup if not already scheduled
+        if (!wp_next_scheduled('bfa_cleanup')) {
+            wp_schedule_event(time(), 'daily', 'bfa_cleanup');
         }
-        return self::$instance;
     }
     
     /**
-     * Activation hook
+     * Perform cleanup tasks
      */
-    public function activate(): void {
-        $this->database->createTables();
-        $this->config->setDefaults();
-        
-        // Schedule cron jobs
-        if (!wp_next_scheduled('bfa_cleanup_old_data')) {
-            wp_schedule_event(time(), 'daily', 'bfa_cleanup_old_data');
-        }
-        
-        flush_rewrite_rules();
-    }
-    
-    /**
-     * Deactivation hook
-     */
-    public function deactivate(): void {
-        // Clear scheduled events
-        wp_clear_scheduled_hook('bfa_cleanup_old_data');
-        
-        flush_rewrite_rules();
+    public function performCleanup(): void {
+        $retentionDays = $this->config->get('retention_days', 365);
+        $this->database->cleanOldData($retentionDays);
     }
     
     /**
@@ -121,9 +83,9 @@ class Plugin {
     }
     
     /**
-     * Get admin instance
+     * Get tracker instance
      */
-    public function getAdmin(): ?Admin {
-        return $this->admin;
+    public function getTracker(): Tracker {
+        return $this->tracker;
     }
 }

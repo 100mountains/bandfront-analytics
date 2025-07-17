@@ -42,6 +42,8 @@ class Admin {
         add_action('wp_ajax_bfa_save_settings', [$this, 'ajaxSaveSettings']);
         add_action('wp_ajax_bfa_get_api_traffic', [$this, 'ajaxGetApiTraffic']);
         add_action('wp_ajax_bfa_get_db_activity', [$this, 'ajaxGetDbActivity']);
+        add_action('wp_ajax_bfa_generate_test_events', [$this, 'ajaxGenerateTestEvents']);
+        add_action('wp_ajax_bfa_clean_test_events', [$this, 'ajaxCleanTestEvents']);
     }
     
     /**
@@ -536,6 +538,67 @@ class Admin {
         
         wp_send_json_success([
             'activity' => $activity,
+        ]);
+    }
+    
+    /**
+     * AJAX handler for generating test events
+     */
+    public function ajaxGenerateTestEvents(): void {
+        check_ajax_referer('bfa_test_actions', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $database = $this->plugin->getDatabase();
+        
+        // Generate various test events
+        $test_events = [
+            ['pageview', 'post', rand(1, 100)],
+            ['music_play', 'track', rand(1, 50)],
+            ['download', 'file', rand(1, 30)],
+            ['user_login', 'user', rand(1, 10)],
+            ['add_to_cart', 'product', rand(1, 20)],
+        ];
+        
+        $count = 0;
+        foreach ($test_events as $event) {
+            $database->recordEvent([
+                'event_type' => $event[0],
+                'object_type' => $event[1],
+                'object_id' => $event[2],
+                'session_id' => 'test_' . wp_generate_password(12, false),
+                'meta_data' => ['test_event' => true],
+            ]);
+            $count++;
+        }
+        
+        wp_send_json_success([
+            'message' => sprintf(__('Generated %d test events', 'bandfront-analytics'), $count),
+        ]);
+    }
+    
+    /**
+     * AJAX handler for cleaning test events
+     */
+    public function ajaxCleanTestEvents(): void {
+        check_ajax_referer('bfa_test_actions', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        global $wpdb;
+        
+        // Delete test events (those with test_event in meta_data)
+        $deleted = $wpdb->query(
+            "DELETE FROM {$wpdb->prefix}bfa_events 
+            WHERE meta_data LIKE '%test_event%'"
+        );
+        
+        wp_send_json_success([
+            'message' => sprintf(__('Deleted %d test events', 'bandfront-analytics'), $deleted),
         ]);
     }
     

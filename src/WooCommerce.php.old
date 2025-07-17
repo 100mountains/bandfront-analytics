@@ -1,5 +1,5 @@
 <?php
-namespace bfa;
+namespace bfp;
 
 /**
  * WooCommerce integration functionality for Bandfront Player
