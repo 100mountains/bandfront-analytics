@@ -200,4 +200,198 @@ jQuery(document).ready(function($) {
         }
     });
     
+    // Database Monitor functionality
+    let dbMonitor = {
+        interval: null,
+        paused: false,
+        enabled: false,
+        
+        init: function() {
+            // Check if we're on the database monitor tab
+            const $container = $('.bfa-database-monitor');
+            if ($container.length === 0) return;
+            
+            // Get monitoring enabled state from data attribute
+            this.enabled = $container.data('monitoring-enabled') === true || $container.data('monitoring-enabled') === 'true';
+            
+            if (this.enabled) {
+                this.startMonitoring();
+                this.bindEvents();
+            }
+        },
+        
+        startMonitoring: function() {
+            if (!this.enabled) return;
+            
+            this.fetchActivity();
+            this.interval = setInterval(() => {
+                if (!this.paused && this.enabled) {
+                    this.fetchActivity();
+                }
+            }, 3000); // Update every 3 seconds
+        },
+        
+        fetchActivity: function() {
+            if (!this.enabled) return;
+            
+            $.post(bfaAdmin.ajaxUrl, {
+                action: 'bfa_get_db_activity',
+                nonce: bfaAdmin.ajaxNonce
+            }, (response) => {
+                if (response.success) {
+                    this.updateActivityList(response.data.activity);
+                }
+            });
+        },
+        
+        updateActivityList: function(activities) {
+            const $list = $('.bfa-activity-list');
+            
+            // Don't update if monitoring is disabled
+            if (!this.enabled) {
+                return;
+            }
+            
+            $list.empty();
+            
+            if (activities.length === 0) {
+                $list.html('<div class="bfa-no-traffic"><p>No database activity yet...</p></div>');
+                return;
+            }
+            
+            activities.forEach(activity => {
+                const $item = $('<div class="bfa-activity-item">');
+                $item.html(`
+                    <span class="bfa-activity-time">${activity.time}</span>
+                    <span class="bfa-activity-type">${activity.type}</span>
+                    <span class="bfa-activity-object">${activity.object}</span>
+                `);
+                $list.append($item);
+            });
+        },
+        
+        bindEvents: function() {
+            $('#bfa-pause-monitor').on('click', () => {
+                this.paused = !this.paused;
+                $('#bfa-pause-monitor').text(this.paused ? 'Resume' : 'Pause');
+                $('.bfa-status-dot').toggleClass('paused', this.paused);
+            });
+        },
+        
+        refresh: function() {
+            if (this.enabled) {
+                this.fetchActivity();
+            }
+        },
+        
+        stop: function() {
+            if (this.interval) {
+                clearInterval(this.interval);
+                this.interval = null;
+            }
+        }
+    };
+    
+    // Initialize Database Monitor if on that tab
+    if ($('.bfa-database-monitor').length > 0) {
+        dbMonitor.init();
+        window.bfaActivityMonitor = dbMonitor; // Make available globally for test actions
+    }
+    
+    // Test event handlers
+    $(document).on('click', '#bfa-generate-test-events', function() {
+        var $button = $(this);
+        var $spinner = $('.bfa-test-actions .spinner');
+        var $results = $('#bfa-test-results');
+        
+        $button.prop('disabled', true);
+        $spinner.addClass('is-active');
+        
+        $.post(bfaAdmin.ajaxUrl, {
+            action: 'bfa_generate_test_events',
+            nonce: bfaAdmin.ajaxNonce
+        }, function(response) {
+            $button.prop('disabled', false);
+            $spinner.removeClass('is-active');
+            
+            if (response.success) {
+                $results.find('.notice')
+                    .removeClass('notice-error')
+                    .addClass('notice-success');
+                $results.find('p').html(response.data.message);
+                $results.show();
+                
+                // Refresh activity monitor
+                if (window.bfaActivityMonitor) {
+                    window.bfaActivityMonitor.refresh();
+                }
+            } else {
+                $results.find('.notice')
+                    .removeClass('notice-success')
+                    .addClass('notice-error');
+                $results.find('p').text(response.data.message || 'An error occurred');
+                $results.show();
+            }
+        });
+    });
+    
+    $(document).on('click', '#bfa-clean-test-events', function() {
+        if (!confirm('Are you sure you want to delete all test data? This cannot be undone.')) {
+            return;
+        }
+        
+        var $button = $(this);
+        var $spinner = $('.bfa-test-actions .spinner');
+        var $results = $('#bfa-test-results');
+        
+        $button.prop('disabled', true);
+        $spinner.addClass('is-active');
+        
+        $.post(bfaAdmin.ajaxUrl, {
+            action: 'bfa_clean_test_events',
+            nonce: bfaAdmin.ajaxNonce
+        }, function(response) {
+            $button.prop('disabled', false);
+            $spinner.removeClass('is-active');
+            
+            if (response.success) {
+                $results.find('.notice')
+                    .removeClass('notice-error')
+                    .addClass('notice-success');
+                $results.find('p').html(response.data.message);
+                $results.show();
+                
+                // Refresh activity monitor
+                if (window.bfaActivityMonitor) {
+                    window.bfaActivityMonitor.refresh();
+                }
+            } else {
+                $results.find('.notice')
+                    .removeClass('notice-success')
+                    .addClass('notice-error');
+                $results.find('p').text(response.data.message || 'An error occurred');
+                $results.show();
+            }
+        });
+    });
+    
+    // Clean up intervals when leaving page or switching tabs
+    $(window).on('beforeunload', function() {
+        if (trafficInterval) {
+            clearInterval(trafficInterval);
+        }
+        if (dbActivityInterval) {
+            clearInterval(dbActivityInterval);
+        }
+        if (dbMonitor.interval) {
+            dbMonitor.stop();
+        }
+    });
+    
+    // Also stop monitoring when switching tabs
+    $('.nav-tab').on('click', function() {
+        if (dbMonitor.interval) {
+            dbMonitor.stop();
+        }
+    });
 });

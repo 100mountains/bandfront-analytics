@@ -390,6 +390,12 @@ jQuery(document).ready(function($) {
         initDashboardWidget();
     }
     
+    // Database Monitor functionality
+    if ($('#bfa-activity-monitor').length) {
+        // This code should be in the PHP file, not here
+        // The activity monitor is already initialized inline in DatabaseMonitor.php
+    }
+    
     // Auto-refresh every 60 seconds
     setInterval(function() {
         if ($('#bfa-main-chart').length) {

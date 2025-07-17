@@ -31,6 +31,9 @@ class Config {
             'anonymize_ip' => true,
             'respect_dnt' => true,
             
+            // Database monitoring
+            'enable_db_monitoring' => false,
+            
             // Performance settings
             'sampling_rate' => 0.1, // 10% sampling when over threshold
             'sampling_threshold' => 10000, // Daily views before sampling kicks in
