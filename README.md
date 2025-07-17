@@ -14,6 +14,15 @@ bandfront/
 ## Overview
 Bandfront Analytics is a comprehensive analytics add-on for the Bandfront suite. This plugin provides insightful data and metrics, designed to enhance decision-making and performance optimization for users running WordPress and WooCommerce sites.
 
+admin widget
+
+Brand icon (📊) → Shows analytics overview
+Views box (👁️) → Shows page views details
+Visitors box (👥) → Shows visitor details
+Plays box (🎵) → Shows music plays details
+Change box (📈/📉) → Shows growth trend (back to original)
+Chart area (the long purple box) → Shows live traffic
+
 ## Features
 - Real-time tracking of user interactions
 - Detailed reports on sales and conversions
