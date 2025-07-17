@@ -23,6 +23,8 @@ class ComposerStaticInit0c405109c72939381025ea518499511b
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'bfa\\Admin\\Admin' => __DIR__ . '/../..' . '/src/Admin/Admin.php',
+        'bfa\\Admin\\AdminBarWidget' => __DIR__ . '/../..' . '/src/Admin/AdminBarWidget.php',
+        'bfa\\Admin\\DashboardWidget' => __DIR__ . '/../..' . '/src/Admin/DashboardWidget.php',
         'bfa\\Admin\\DatabaseMonitor' => __DIR__ . '/../..' . '/src/Admin/DatabaseMonitor.php',
         'bfa\\Analytics' => __DIR__ . '/../..' . '/src/Analytics.php',
         'bfa\\Api' => __DIR__ . '/../..' . '/src/Api.php',
@@ -35,6 +37,7 @@ class ComposerStaticInit0c405109c72939381025ea518499511b
         'bfa\\UI\\TabManager' => __DIR__ . '/../..' . '/src/UI/TabManager.php',
         'bfa\\Utils\\DbClean' => __DIR__ . '/../..' . '/src/Utils/DbClean.php',
         'bfa\\Utils\\DbTest' => __DIR__ . '/../..' . '/src/Utils/DbTest.php',
+        'bfa\\WooCommerce' => __DIR__ . '/../..' . '/src/WooCommerce.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

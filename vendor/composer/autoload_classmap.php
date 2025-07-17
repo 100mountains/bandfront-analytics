@@ -8,6 +8,8 @@ $baseDir = dirname($vendorDir);
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'bfa\\Admin\\Admin' => $baseDir . '/src/Admin/Admin.php',
+    'bfa\\Admin\\AdminBarWidget' => $baseDir . '/src/Admin/AdminBarWidget.php',
+    'bfa\\Admin\\DashboardWidget' => $baseDir . '/src/Admin/DashboardWidget.php',
     'bfa\\Admin\\DatabaseMonitor' => $baseDir . '/src/Admin/DatabaseMonitor.php',
     'bfa\\Analytics' => $baseDir . '/src/Analytics.php',
     'bfa\\Api' => $baseDir . '/src/Api.php',
@@ -20,4 +22,5 @@ return array(
     'bfa\\UI\\TabManager' => $baseDir . '/src/UI/TabManager.php',
     'bfa\\Utils\\DbClean' => $baseDir . '/src/Utils/DbClean.php',
     'bfa\\Utils\\DbTest' => $baseDir . '/src/Utils/DbTest.php',
+    'bfa\\WooCommerce' => $baseDir . '/src/WooCommerce.php',
 );

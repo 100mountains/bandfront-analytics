@@ -38,7 +38,6 @@ class Admin {
     private function initHooks(): void {
         add_action('admin_menu', [$this, 'addMenuPages']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
-        add_action('wp_dashboard_setup', [$this, 'addDashboardWidget']);
         add_action('wp_ajax_bfa_save_settings', [$this, 'ajaxSaveSettings']);
         add_action('wp_ajax_bfa_get_api_traffic', [$this, 'ajaxGetApiTraffic']);
         add_action('wp_ajax_bfa_get_db_activity', [$this, 'ajaxGetDbActivity']);
@@ -623,49 +622,5 @@ class Admin {
             __('Settings saved successfully!', 'bandfront-analytics'),
             'success'
         );
-    }
-    
-    /**
-     * Add dashboard widget
-     */
-    public function addDashboardWidget(): void {
-        if (!$this->plugin->getConfig()->get('show_dashboard_widget', true)) {
-            return;
-        }
-        
-        wp_add_dashboard_widget(
-            'bfa_dashboard_widget',
-            __('Analytics Overview', 'bandfront-analytics'),
-            [$this, 'renderDashboardWidget']
-        );
-    }
-    
-    /**
-     * Render dashboard widget
-     */
-    public function renderDashboardWidget(): void {
-        $quickStats = $this->plugin->getDatabase()->getQuickStats();
-        ?>
-        <div class="bfa-dashboard-widget">
-            <div class="bfa-widget-stats">
-                <div class="bfa-widget-stat">
-                    <strong><?php echo number_format($quickStats['today_views']); ?></strong>
-                    <span><?php esc_html_e('Views Today', 'bandfront-analytics'); ?></span>
-                </div>
-                <div class="bfa-widget-stat">
-                    <strong><?php echo number_format($quickStats['today_visitors']); ?></strong>
-                    <span><?php esc_html_e('Visitors', 'bandfront-analytics'); ?></span>
-                </div>
-            </div>
-            <div class="bfa-widget-chart">
-                <canvas id="bfa-dashboard-chart" height="150"></canvas>
-            </div>
-            <p class="bfa-widget-footer">
-                <a href="<?php echo admin_url('admin.php?page=bandfront-analytics'); ?>">
-                    <?php esc_html_e('View Full Report', 'bandfront-analytics'); ?> →
-                </a>
-            </p>
-        </div>
-        <?php
     }
 }

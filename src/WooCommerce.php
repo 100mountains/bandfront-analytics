@@ -13,16 +13,31 @@ if (!defined('ABSPATH')) {
  * WooCommerce Integration Class
  * Handles all WooCommerce-specific functionality and integrations
  */
+/**
+ * WooCommerce Integration Class
+ * Handles all WooCommerce-specific functionality and integrations
+ */
 class WooCommerce {
     
+    /**
+     * Main plugin instance
+     * @var Plugin
+     */
     private Plugin $mainPlugin;
     
+    /**
+     * Constructor
+     * @param Plugin $mainPlugin
+     */
     public function __construct(Plugin $mainPlugin) {
         $this->mainPlugin = $mainPlugin;
     }
     
     /**
      * Include the shortcode in the product title only if the player is enabled and playlist_watermark is not active
+     * @param string $title
+     * @param mixed $product
+     * @return string
      */
     public function woocommerceProductTitle(string $title, $product): string {
         if (!$product) {
@@ -47,6 +62,8 @@ class WooCommerce {
 
     /**
      * Check if user has purchased a specific product
+     * @param int $productId
+     * @return string|false
      */
     public function woocommerceUserProduct(int $productId): string|false {
         $this->mainPlugin->setPurchasedProductFlag(false);
@@ -87,6 +104,8 @@ class WooCommerce {
     
     /**
      * Get user download links for a product
+     * @param int $productId
+     * @return string
      */
     public function woocommerceUserDownload(int $productId): string {
         $downloadLinks = [];
@@ -113,12 +132,15 @@ class WooCommerce {
     
     /**
      * Replace the shortcode to display a playlist with all songs
+     * @param array $atts
+     * @return string
      */
     public function replacePlaylistShortcode(array $atts): string {
         if (!class_exists('woocommerce') || is_admin()) {
             return '';
         }
 
+        // Closure to get times purchased for a product
         $getTimes = function(int $productId, array $productsList): int {
             if (!empty($productsList)) {
                 foreach ($productsList as $product) {
@@ -192,6 +214,7 @@ class WooCommerce {
             $atts
         );
 
+        // Extract and typecast shortcode attributes
         $playlistTitle            = trim($atts['title']);
         $productsIds              = $atts['products_ids'];
         $productCategories        = $atts['product_categories'];
@@ -253,12 +276,21 @@ class WooCommerce {
     
     /**
      * Build the playlist output HTML
+     * @param string $productsIds
+     * @param string $productCategories
+     * @param string $productTags
+     * @param int $purchasedProducts
+     * @param array $atts
+     * @param string $output
+     * @return string
      */
     private function buildPlaylistOutput(string $productsIds, string $productCategories, string $productTags, int $purchasedProducts, array $atts, string $output): string {
         global $wpdb, $post;
 
+        // Get current post ID
         $currentPostId = !empty($post) ? (is_int($post) ? $post : $post->ID) : -1;
 
+        // Build SQL query for products
         $query = 'SELECT posts.ID, posts.post_title FROM ' . $wpdb->posts . ' AS posts, ' . $wpdb->postmeta . ' as postmeta WHERE posts.post_status="publish" AND posts.post_type IN (' . $this->mainPlugin->getPostTypes(true) . ') AND posts.ID = postmeta.post_id AND postmeta.meta_key="_bfp_enable_player" AND (postmeta.meta_value="yes" OR postmeta.meta_value="1")';
 
         if (!empty($purchasedProducts)) {
@@ -268,6 +300,7 @@ class WooCommerce {
                 return $output;
             }
 
+            // Get customer orders
             $customerOrders = get_posts(
                 [
                     'meta_key'    => '_customer_user',
@@ -282,6 +315,7 @@ class WooCommerce {
                 return $output;
             }
 
+            // Collect product IDs from orders
             $productsIds = [];
             foreach ($customerOrders as $customerOrder) {
                 $order = wc_get_order($customerOrder->ID);
@@ -302,6 +336,7 @@ class WooCommerce {
             } else {
                 $taxQuery = [];
 
+                // Add category filter
                 if ('' != $productCategories) {
                     $categories = explode(',', $productCategories);
                     $taxQuery[] = [
@@ -313,6 +348,7 @@ class WooCommerce {
                     ];
                 }
 
+                // Add tag filter
                 if ('' != $productTags) {
                     $tags = explode(',', $productTags);
                     $taxQuery[] = [
@@ -323,6 +359,7 @@ class WooCommerce {
                     ];
                 }
 
+                // Build taxonomy SQL
                 if (!empty($taxQuery)) {
                     $taxQuery['relation'] = 'OR';
                     $taxQuerySql = get_tax_sql($taxQuery, 'posts', 'ID');
@@ -338,6 +375,7 @@ class WooCommerce {
             }
         }
 
+        // Get products from database
         $products = $wpdb->get_results($query);
 
         if (!empty($products)) {
@@ -350,16 +388,23 @@ class WooCommerce {
     
     /**
      * Render the playlist products
+     * @param array $products
+     * @param array $atts
+     * @param int $currentPostId
+     * @param string $output
+     * @return string
      */
     private function renderPlaylistProducts(array $products, array $atts, int $currentPostId, string $output): string {
         global $wpdb;
         
+        // Get purchased times for products if enabled
         $productPurchasedTimes = [];
         if ($atts['purchased_times']) {
             $productsIdsStr = (is_array($atts['products_ids'])) ? implode(',', $atts['products_ids']) : $atts['products_ids'];
             $productPurchasedTimes = $wpdb->get_results('SELECT order_itemmeta.meta_value product_id, COUNT(order_itemmeta.meta_value) as times FROM ' . $wpdb->prefix . 'posts as orders INNER JOIN ' . $wpdb->prefix . 'woocommerce_order_items as order_items ON (orders.ID=order_items.order_id) INNER JOIN ' . $wpdb->prefix . 'woocommerce_order_itemmeta as order_itemmeta ON (order_items.order_item_id=order_itemmeta.order_item_id) WHERE orders.post_type="shop_order" AND orders.post_status="wc-completed" AND order_itemmeta.meta_key="_product_id" ' . (strlen($productsIdsStr) && false === strpos('*', $productsIdsStr) ? ' AND order_itemmeta.meta_value IN (' . $productsIdsStr . ')' : '') . ' GROUP BY order_itemmeta.meta_value');
         }
 
+        // Enqueue playlist widget resources
         $this->mainPlugin->getPlayer()->enqueueResources();
         wp_enqueue_style('bfp-playlist-widget-style', plugin_dir_url(dirname(__FILE__)) . 'widgets/playlist_widget/css/style.css', [], BFP_VERSION);
         wp_enqueue_script('bfp-playlist-widget-script', plugin_dir_url(dirname(__FILE__)) . 'widgets/playlist_widget/js/widget.js', [], BFP_VERSION);
@@ -373,6 +418,7 @@ class WooCommerce {
         $output .= '<div data-loop="' . ($atts['loop'] ? 1 : 0) . '">';
         
         foreach ($products as $product) {
+            // Skip if purchased only and user hasn't purchased
             if ($this->mainPlugin->getForcePurchasedFlag() && !$this->woocommerceUserProduct($product->ID)) {
                 continue;
             }
@@ -385,11 +431,13 @@ class WooCommerce {
                 $rowClass = 'bfp-odd-product';
             }
 
+            // Get audio files for product
             $audioFiles = $this->mainPlugin->getPlayer()->getProductFiles($product->ID);
             if (!is_array($audioFiles)) {
                 $audioFiles = [];
             }
 
+            // Get download links if enabled
             $downloadLinks = '';
             if ($atts['download_links']) {
                 $downloadLinks = $this->woocommerceUserDownload($product->ID);
@@ -407,12 +455,13 @@ class WooCommerce {
             }
             $atts['purchased_times'] = $purchasedTimes;
 
+            // Render single product
             $output .= $this->renderSingleProduct($product, $productObj, $atts, $audioFiles, $downloadLinks, $rowClass, $currentPostId, $preload, $counter);
         }
         
         $output .= '</div>';
         
-        // Use getState for message retrieval
+        // Show message if enabled
         $message = $this->mainPlugin->getConfig()->getState('_bfp_message', '');
         if (!empty($message) && empty($atts['hide_message'])) {
             $output .= '<div class="bfp-message">' . wp_kses_post(__($message, 'bandfront-player')) . '</div>';
@@ -420,6 +469,7 @@ class WooCommerce {
         
         $this->mainPlugin->setForcePurchasedFlag(0);
 
+        // Add playlist title if set
         if (!empty($atts['title']) && !empty($output)) {
             $output = '<div class="bfp-widget-playlist-title">' . esc_html($atts['title']) . '</div>' . $output;
         }
@@ -429,6 +479,16 @@ class WooCommerce {
     
     /**
      * Render a single product in the playlist
+     * @param mixed $product
+     * @param mixed $productObj
+     * @param array $atts
+     * @param array $audioFiles
+     * @param string $downloadLinks
+     * @param string $rowClass
+     * @param int $currentPostId
+     * @param string $preload
+     * @param int $counter
+     * @return string
      */
     private function renderSingleProduct($product, $productObj, array $atts, array $audioFiles, string $downloadLinks, string $rowClass, int $currentPostId, string $preload, int $counter): string {
         $output = '';
@@ -450,6 +510,7 @@ class WooCommerce {
             $output .= '<div class="bfp-widget-product-title">';
             $output .= '<a href="' . esc_url(get_permalink($product->ID)) . '">' . esc_html($productObj->get_name()) . '</a>';
             
+            // Show purchased times if enabled
             if ($atts['purchased_times']) {
                 $output .= '<span class="bfp-purchased-times">' .
                           sprintf(
@@ -461,9 +522,11 @@ class WooCommerce {
             $output .= $downloadLinks;
             $output .= '</div>';
             
+            // Show purchase button if not hidden
             if (0 != @floatval($price) && 0 == $atts['hide_purchase_buttons']) {
                 $productIdForAddToCart = $product->ID;
                 
+                // Handle variable products
                 if ($productObj->is_type('variable')) {
                     $variations = $productObj->get_available_variations();
                     $variationsId = wp_list_pluck($variations, 'variation_id');
@@ -521,6 +584,7 @@ class WooCommerce {
                 $output .= $audioTag;
                 $output .= '<span class="bfp-file-name">' . $fileTitle . '</span>';
                 
+                // Show duration if enabled
                 if (!isset($atts['duration']) || $atts['duration'] == 1) {
                     $output .= '<span class="bfp-file-duration">' . esc_html($duration) . '</span>';
                 }
@@ -541,6 +605,7 @@ class WooCommerce {
                 $output .= '<li style="display:table-row;">' . $featuredImage . '<div class="bfp-widget-product-files-list"><ul>';
             }
 
+            // Render audio files
             foreach ($audioFiles as $index => $file) {
                 $audioUrl = $this->mainPlugin->getAudioCore()->generateAudioUrl($product->ID, $index, $file);
                 $duration = $this->mainPlugin->getAudioCore()->getDurationByUrl($file['file']);
@@ -571,6 +636,7 @@ class WooCommerce {
                 $output .= '<div class="bfp-player-col bfp-widget-product-file" style="display:table-cell;">' . $audioTag . '</div>';
                 $output .= '<div class="bfp-title-col" style="display:table-cell;"><span class="bfp-player-song-title">' . $fileTitle . '</span>';
                 
+                // Show duration if enabled
                 if (!empty($atts['duration']) && $atts['duration'] == 1) {
                     $output .= ' <span class="bfp-player-song-duration">' . esc_html($duration) . '</span>';
                 }
