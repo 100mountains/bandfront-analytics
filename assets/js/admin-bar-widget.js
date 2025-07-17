@@ -348,33 +348,44 @@ jQuery(document).ready(function($) {
         });
     }
     
-    // Event handlers - fix selectors to match actual HTML
+    // Event handlers - make clicking more reliable
     
-    // Click on the main analytics bar to show overview
-    $(document).on('click', '.bfa-admin-bar-analytics', function(e) {
+    // Use direct click handler on stat boxes for better reliability
+    $(document).on('click', '.bfa-stat-box', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        // Check if click was on a stat box
-        const target = $(e.target).closest('.bfa-stat-box');
-        if (target.length) {
-            // Handle stat box click
-            const section = target.hasClass('bfa-views-box') ? 'views' :
-                           target.hasClass('bfa-visitors-box') ? 'visitors' :
-                           target.hasClass('bfa-plays-box') ? 'plays' :
-                           target.hasClass('bfa-change-box') ? 'change' : 'overview';
-            
-            showExpandedWidget(section);
-        } else {
-            // Click on other areas shows overview
+        const $this = $(this);
+        const section = $this.hasClass('bfa-views-box') ? 'views' :
+                       $this.hasClass('bfa-visitors-box') ? 'visitors' :
+                       $this.hasClass('bfa-plays-box') ? 'plays' :
+                       $this.hasClass('bfa-change-box') ? 'change' : 'overview';
+        
+        showExpandedWidget(section);
+    });
+    
+    // Click on brand or chart areas shows overview
+    $(document).on('click', '.bfa-bar-brand, .bfa-mini-chart-container', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showExpandedWidget('overview');
+    });
+    
+    // Prevent bubbling on the main analytics bar
+    $(document).on('click', '.bfa-admin-bar-analytics', function(e) {
+        // Only process if not clicking on a child element
+        if (e.target === this) {
+            e.preventDefault();
+            e.stopPropagation();
             showExpandedWidget('overview');
         }
     });
     
     // Prevent the default WordPress admin bar behavior
-    $(document).on('click', '#wp-admin-bar-bfa-analytics-bar a', function(e) {
+    $(document).on('click', '#wp-admin-bar-bfa-analytics-bar > a', function(e) {
         e.preventDefault();
         e.stopPropagation();
+        return false;
     });
     
     // Close expanded widget when clicking outside
