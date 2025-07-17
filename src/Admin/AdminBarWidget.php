@@ -71,7 +71,7 @@ class AdminBarWidget {
         
         $html = '<div class="bfa-admin-bar-analytics">';
         
-        // Analytics icon only - no text
+        // Analytics icon - simple Unicode bar chart character
         $html .= '<div class="bfa-bar-brand">';
         $html .= '<span class="bfa-brand-icon">📊</span>';
         $html .= '</div>';

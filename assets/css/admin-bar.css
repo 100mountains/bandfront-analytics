@@ -46,6 +46,38 @@
 
 .bfa-brand-icon {
     font-size: 11px;
+    line-height: 1;
+    display: inline-block;
+    opacity: 0.9;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    filter: grayscale(20%);
+}
+
+/* Hover effect on icon */
+.bfa-admin-bar-analytics:hover .bfa-brand-icon {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: grayscale(0%);
+}
+
+/* Dashicon specific styling */
+.bfa-brand-icon.dashicons {
+    font-family: dashicons !important;
+}
+
+.bfa-brand-icon.dashicons:before {
+    font-size: 14px !important;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+}
+
+/* Bar chart icon styling */
+.bfa-brand-icon svg {
+    width: 12px;
+    height: 12px;
+    fill: currentColor;
+    opacity: 0.9;
 }
 
 /* Stats container */
@@ -452,7 +484,7 @@
     }
     
     .bfa-brand-icon {
-        font-size: 12px;
+        font-size: 13px;
     }
     
     .bfa-stat-box {
@@ -471,6 +503,16 @@
     #bfa-admin-bar-chart {
         width: 40px;
         height: 14px;
+    }
+    
+    .bfa-brand-icon-wrapper {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .bfa-animated-bars {
+        width: 16px;
+        height: 16px;
     }
 }
 
