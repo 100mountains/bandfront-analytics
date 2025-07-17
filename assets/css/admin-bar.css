@@ -1,3 +1,303 @@
+/* Jetpack-style Admin Bar Analytics Widget */
+
+/* Main admin bar container */
+.bfa-analytics-main-bar {
+    position: relative !important;
+}
+
+.bfa-admin-bar-analytics {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+    height: 32px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    border-radius: 16px;
+    color: white !important;
+    font-size: 12px;
+    min-width: 400px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+/* Brand section */
+.bfa-bar-brand {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-right: 8px;
+    border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.bfa-brand-icon {
+    font-size: 14px;
+}
+
+.bfa-brand-text {
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Stats container */
+.bfa-bar-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+/* Individual stat boxes */
+.bfa-stat-box {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    min-width: 45px;
+}
+
+.bfa-stat-box:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Different colored boxes */
+.bfa-views-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bfa-visitors-box {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.bfa-plays-box {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.bfa-change-box.bfa-change-positive {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.bfa-change-box.bfa-change-negative {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Stat content */
+.bfa-stat-icon {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.bfa-stat-data {
+    text-align: center;
+}
+
+.bfa-stat-number {
+    font-weight: 700;
+    font-size: 11px;
+    line-height: 1;
+    color: white;
+}
+
+.bfa-stat-label {
+    font-size: 9px;
+    opacity: 0.8;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+/* Mini chart */
+.bfa-mini-chart-container {
+    padding-left: 6px;
+    border-left: 1px solid rgba(255,255,255,0.2);
+}
+
+#bfa-admin-bar-chart {
+    vertical-align: middle;
+    opacity: 0.8;
+}
+
+/* Expanded widget (on hover) */
+.bfa-expanded-widget {
+    position: fixed;
+    top: 32px;
+    right: 20px;
+    width: 380px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    z-index: 999999;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.bfa-expanded-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bfa-expanded-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.bfa-live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.bfa-pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #43e97b;
+    border-radius: 50%;
+    animation: bfaPulse 2s infinite;
+}
+
+@keyframes bfaPulse {
+    0% { box-shadow: 0 0 0 0 rgba(67, 233, 123, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(67, 233, 123, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(67, 233, 123, 0); }
+}
+
+/* Expanded stats */
+.bfa-expanded-stats {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.bfa-expanded-stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.bfa-expanded-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+}
+
+.bfa-expanded-stat-content {
+    flex: 1;
+}
+
+.bfa-expanded-stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+}
+
+.bfa-expanded-stat-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-top: 2px;
+}
+
+.bfa-expanded-stat-sublabel {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+/* Expanded chart */
+.bfa-expanded-chart {
+    padding: 0 20px 20px;
+}
+
+.bfa-expanded-chart h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Footer */
+.bfa-expanded-footer {
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+}
+
+.bfa-expanded-button {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none !important;
+    font-weight: 600;
+    transition: transform 0.2s ease;
+}
+
+.bfa-expanded-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 782px) {
+    .bfa-admin-bar-analytics {
+        min-width: 200px;
+    }
+    
+    .bfa-brand-text {
+        display: none;
+    }
+    
+    .bfa-stat-label {
+        display: none;
+    }
+    
+    .bfa-mini-chart-container {
+        display: none;
+    }
+    
+    .bfa-expanded-widget {
+        width: 320px;
+        right: 10px;
+    }
+}
+
+/* Admin bar specific overrides */
+#wpadminbar .bfa-analytics-main-bar .ab-item {
+    padding: 0 !important;
+    height: auto !important;
+}
+
+#wpadminbar .bfa-analytics-main-bar:hover .ab-item {
+    background: none !important;
+}
+
+/* Hide default admin bar item styling */
+#wpadminbar .bfa-analytics-main-bar .ab-item:before {
+    display: none !important;
+}
+
 /* Admin Bar Widget Styles */
 #wp-admin-bar-bfa-stats .ab-icon {
     margin-right: 6px !important;
