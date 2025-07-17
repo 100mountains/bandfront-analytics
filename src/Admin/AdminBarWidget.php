@@ -45,37 +45,15 @@ class AdminBarWidget {
         
         $stats = $this->plugin->getDatabase()->getQuickStats();
         
-        // Main expanded analytics bar
+        // Main expanded analytics bar - NO href to prevent navigation
         $adminBar->add_node([
             'id' => 'bfa-analytics-bar',
             'title' => $this->renderMainBarContent($stats),
-            'href' => admin_url('admin.php?page=bandfront-analytics'),
+            'href' => '#', // Use # instead of admin URL to prevent navigation
             'meta' => [
                 'class' => 'bfa-analytics-main-bar',
                 'html' => true
             ]
-        ]);
-        
-        // Quick action submenu
-        $adminBar->add_node([
-            'id' => 'bfa-view-dashboard',
-            'parent' => 'bfa-analytics-bar',
-            'title' => __('📊 Full Dashboard', 'bandfront-analytics'),
-            'href' => admin_url('admin.php?page=bandfront-analytics')
-        ]);
-        
-        $adminBar->add_node([
-            'id' => 'bfa-view-plays',
-            'parent' => 'bfa-analytics-bar',
-            'title' => __('🎵 Play Analytics', 'bandfront-analytics'),
-            'href' => admin_url('admin.php?page=bandfront-play-analytics')
-        ]);
-        
-        $adminBar->add_node([
-            'id' => 'bfa-view-settings',
-            'parent' => 'bfa-analytics-bar',
-            'title' => __('⚙️ Settings', 'bandfront-analytics'),
-            'href' => admin_url('admin.php?page=bandfront-analytics-settings')
         ]);
     }
     
