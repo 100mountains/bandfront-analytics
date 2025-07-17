@@ -16,17 +16,17 @@
 .bfa-admin-bar-analytics {
     display: flex;
     align-items: center;
-    gap: 2px; /* Even smaller gap */
-    padding: 2px 4px; /* Minimal padding */
+    gap: 2px;
+    padding: 2px 4px;
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    border-radius: 6px; /* Smaller radius */
+    border-radius: 6px;
     color: white !important;
-    font-size: 9px; /* Smaller font */
-    min-width: 220px; /* Reduced width */
+    font-size: 9px;
+    min-width: 180px; /* Even more compact */
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     cursor: pointer;
-    margin: 6px 4px; /* Centered margin */
-    height: 20px; /* Even smaller height */
+    margin: 6px 4px;
+    height: 20px;
     transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -35,57 +35,86 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-/* Brand section - just icon, no text */
+/* Brand section - just icon */
 .bfa-bar-brand {
     display: flex;
     align-items: center;
     padding-right: 3px;
     border-right: 1px solid rgba(255,255,255,0.2);
-    height: 12px; /* Smaller height */
+    height: 14px;
 }
 
 .bfa-brand-icon {
-    font-size: 10px;
-}
-
-.bfa-brand-text {
-    display: none; /* Hide the text completely */
+    font-size: 11px;
 }
 
 /* Stats container */
 .bfa-bar-stats {
     display: flex;
     align-items: center;
-    gap: 2px; /* Minimal gap */
+    gap: 2px;
     flex: 1;
 }
 
-/* Individual stat boxes */
+/* Individual stat boxes - ultra minimal */
 .bfa-stat-box {
     display: flex;
     align-items: center;
-    gap: 1px; /* Minimal gap */
-    padding: 1px 3px; /* Very minimal padding */
-    border-radius: 3px; /* Smaller radius */
+    gap: 2px;
+    padding: 2px 4px;
+    border-radius: 3px;
     transition: background 0.2s ease, opacity 0.2s ease;
-    min-width: 32px; /* Smaller width */
+    min-width: auto; /* Let it size naturally */
     cursor: pointer;
     position: relative;
-    height: 12px; /* Smaller height */
+    height: 14px;
 }
 
 .bfa-stat-box:hover {
-    /* No transform! Just brighten */
     opacity: 0.9;
 }
 
-.bfa-stat-box:active {
-    opacity: 0.8;
+/* Tooltip for stat boxes */
+.bfa-stat-box::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    margin-bottom: 5px;
+    z-index: 10000;
 }
 
-/* Remove the overlay effect that might interfere with clicking */
+.bfa-stat-box:hover::after {
+    opacity: 1;
+}
+
+/* Tooltip arrow */
 .bfa-stat-box::before {
-    display: none; /* Remove this completely */
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.9);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 10000;
+}
+
+.bfa-stat-box:hover::before {
+    opacity: 1;
 }
 
 /* Different colored boxes */
@@ -109,45 +138,66 @@
     background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
 }
 
-/* Stat content */
+/* Stat content - just icon and number */
 .bfa-stat-icon {
-    font-size: 8px; /* Smaller icon */
+    font-size: 9px;
     opacity: 0.9;
     line-height: 1;
 }
 
 .bfa-stat-data {
-    text-align: center;
-    line-height: 1;
+    display: none; /* Hide the data wrapper */
 }
 
 .bfa-stat-number {
     font-weight: 700;
-    font-size: 8px; /* Smaller text */
+    font-size: 9px;
     line-height: 1;
     color: white;
 }
 
 .bfa-stat-label {
-    font-size: 6px; /* Tiny label */
-    opacity: 0.7;
-    line-height: 1;
-    margin-top: 0;
+    display: none; /* Hide all labels */
 }
 
 /* Mini chart */
 .bfa-mini-chart-container {
     padding-left: 3px;
     border-left: 1px solid rgba(255,255,255,0.2);
-    height: 12px; /* Match stat box height */
+    height: 14px;
     display: flex;
     align-items: center;
+    position: relative;
+}
+
+/* Tooltip for chart */
+.bfa-mini-chart-container::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    margin-bottom: 5px;
+    z-index: 10000;
+}
+
+.bfa-mini-chart-container:hover::after {
+    opacity: 1;
 }
 
 #bfa-admin-bar-chart {
     vertical-align: middle;
     opacity: 0.8;
-    width: 60px; /* Smaller chart */
+    width: 50px; /* Smaller chart */
     height: 12px;
 }
 
@@ -390,9 +440,9 @@
     }
     
     .bfa-admin-bar-analytics {
-        height: 28px; /* Adjusted for mobile */
-        margin: 9px 4px;
-        min-width: 140px; /* Smaller on mobile */
+        height: 24px;
+        margin: 11px 4px;
+        min-width: 120px;
         gap: 3px;
         padding: 3px 5px;
     }
@@ -407,22 +457,20 @@
     
     .bfa-stat-box {
         height: 16px;
-        min-width: 28px;
         padding: 2px 4px;
     }
     
     .bfa-stat-icon {
-        font-size: 10px;
+        font-size: 11px;
     }
     
     .bfa-stat-number {
         font-size: 10px;
     }
     
-    .bfa-expanded-widget {
-        width: 300px;
-        right: 10px;
-        top: 46px;
+    #bfa-admin-bar-chart {
+        width: 40px;
+        height: 14px;
     }
 }
 

@@ -71,53 +71,40 @@ class AdminBarWidget {
         
         $html = '<div class="bfa-admin-bar-analytics">';
         
-        // Analytics icon and label
+        // Analytics icon only - no text
         $html .= '<div class="bfa-bar-brand">';
         $html .= '<span class="bfa-brand-icon">📊</span>';
-        $html .= '<span class="bfa-brand-text">Analytics</span>';
         $html .= '</div>';
         
-        // Stat boxes
+        // Stat boxes with tooltips
         $html .= '<div class="bfa-bar-stats">';
         
         // Views today
-        $html .= '<div class="bfa-stat-box bfa-views-box">';
-        $html .= '<div class="bfa-stat-icon">👁️</div>';
-        $html .= '<div class="bfa-stat-data">';
-        $html .= '<div class="bfa-stat-number">' . $this->formatNumber($stats['today_views']) . '</div>';
-        $html .= '<div class="bfa-stat-label">Views</div>';
-        $html .= '</div>';
+        $html .= '<div class="bfa-stat-box bfa-views-box" data-tooltip="Page Views Today">';
+        $html .= '<span class="bfa-stat-icon">👁️</span>';
+        $html .= '<span class="bfa-stat-number">' . $this->formatNumber($stats['today_views']) . '</span>';
         $html .= '</div>';
         
         // Visitors today
-        $html .= '<div class="bfa-stat-box bfa-visitors-box">';
-        $html .= '<div class="bfa-stat-icon">👥</div>';
-        $html .= '<div class="bfa-stat-data">';
-        $html .= '<div class="bfa-stat-number">' . $this->formatNumber($stats['today_visitors']) . '</div>';
-        $html .= '<div class="bfa-stat-label">Visitors</div>';
-        $html .= '</div>';
+        $html .= '<div class="bfa-stat-box bfa-visitors-box" data-tooltip="Unique Visitors Today">';
+        $html .= '<span class="bfa-stat-icon">👥</span>';
+        $html .= '<span class="bfa-stat-number">' . $this->formatNumber($stats['today_visitors']) . '</span>';
         $html .= '</div>';
         
         // Music plays
-        $html .= '<div class="bfa-stat-box bfa-plays-box">';
-        $html .= '<div class="bfa-stat-icon">🎵</div>';
-        $html .= '<div class="bfa-stat-data">';
-        $html .= '<div class="bfa-stat-number">' . $this->formatNumber($stats['today_plays'] ?? 0) . '</div>';
-        $html .= '<div class="bfa-stat-label">Plays</div>';
-        $html .= '</div>';
+        $html .= '<div class="bfa-stat-box bfa-plays-box" data-tooltip="Music Plays Today">';
+        $html .= '<span class="bfa-stat-icon">🎵</span>';
+        $html .= '<span class="bfa-stat-number">' . $this->formatNumber($stats['today_plays'] ?? 0) . '</span>';
         $html .= '</div>';
         
         // Change indicator
-        $html .= '<div class="bfa-stat-box bfa-change-box bfa-change-' . $changeClass . '">';
-        $html .= '<div class="bfa-stat-icon">' . $changeIcon . '</div>';
-        $html .= '<div class="bfa-stat-data">';
-        $html .= '<div class="bfa-stat-number">' . ($change >= 0 ? '+' : '') . $change . '%</div>';
-        $html .= '<div class="bfa-stat-label">vs Yesterday</div>';
-        $html .= '</div>';
+        $html .= '<div class="bfa-stat-box bfa-change-box bfa-change-' . $changeClass . '" data-tooltip="Change Since Yesterday">';
+        $html .= '<span class="bfa-stat-icon">' . $changeIcon . '</span>';
+        $html .= '<span class="bfa-stat-number">' . ($change >= 0 ? '+' : '') . $change . '%</span>';
         $html .= '</div>';
         
         // Mini chart container
-        $html .= '<div class="bfa-mini-chart-container">';
+        $html .= '<div class="bfa-mini-chart-container" data-tooltip="Live Traffic - Click to View">';
         $html .= '<canvas id="bfa-admin-bar-chart" width="120" height="30"></canvas>';
         $html .= '</div>';
         
