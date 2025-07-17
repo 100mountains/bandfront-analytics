@@ -10,6 +10,7 @@
     display: flex;
     align-items: center;
     height: 32px !important;
+    overflow: hidden !important; /* Prevent content overflow */
 }
 
 .bfa-admin-bar-analytics {
@@ -24,7 +25,14 @@
     min-width: 320px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.15);
     cursor: pointer;
-    margin: 0 8px; /* Add horizontal margin instead of vertical */
+    margin: 4px 8px; /* Reduced vertical margin */
+    height: 24px; /* Fixed height to fit within 32px admin bar */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Add smooth transition */
+}
+
+.bfa-admin-bar-analytics:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 /* Brand section */
@@ -34,6 +42,7 @@
     gap: 3px;
     padding-right: 6px;
     border-right: 1px solid rgba(255,255,255,0.2);
+    height: 16px; /* Constrain height */
 }
 
 .bfa-brand-icon {
@@ -60,24 +69,25 @@
     display: flex;
     align-items: center;
     gap: 3px;
-    padding: 3px 5px;
+    padding: 2px 4px; /* Reduced padding */
     border-radius: 6px;
     transition: all 0.2s ease;
     min-width: 40px;
     cursor: pointer;
     position: relative;
+    height: 16px; /* Fixed height */
 }
 
 .bfa-stat-box:hover {
-    transform: translateY(-1px) scale(1.02);
+    transform: translateY(-1px);
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 .bfa-stat-box:active {
-    transform: translateY(0) scale(0.98);
+    transform: translateY(0);
 }
 
-/* Add click feedback */
+/* Remove the scale transform that causes wobbling */
 .bfa-stat-box::before {
     content: '';
     position: absolute;
@@ -120,10 +130,12 @@
 .bfa-stat-icon {
     font-size: 11px;
     opacity: 0.9;
+    line-height: 1;
 }
 
 .bfa-stat-data {
     text-align: center;
+    line-height: 1;
 }
 
 .bfa-stat-number {
@@ -144,13 +156,16 @@
 .bfa-mini-chart-container {
     padding-left: 5px;
     border-left: 1px solid rgba(255,255,255,0.2);
+    height: 16px; /* Constrain height */
+    display: flex;
+    align-items: center;
 }
 
 #bfa-admin-bar-chart {
     vertical-align: middle;
     opacity: 0.8;
     width: 100px;
-    height: 20px;
+    height: 16px; /* Reduced height */
 }
 
 /* Expanded widget (on click) */
@@ -306,8 +321,13 @@
 
 /* Responsive adjustments */
 @media screen and (max-width: 782px) {
+    #wpadminbar .bfa-analytics-main-bar > .ab-item {
+        height: 46px !important;
+    }
+    
     .bfa-admin-bar-analytics {
-        min-width: 180px;
+        height: 38px; /* Adjusted for mobile */
+        margin: 4px 8px;
     }
     
     .bfa-brand-text {
@@ -327,18 +347,14 @@
         right: 10px;
         top: 46px;
     }
-    
-    #wpadminbar .bfa-analytics-main-bar .ab-item {
-        height: 46px !important;
-    }
 }
 
 /* Admin bar specific overrides */
-#wpadminbar .bfa-analytics-main-bar .ab-item {
-    height: auto !important;
+#wpadminbar .bfa-analytics-main-bar > .ab-item {
+    line-height: 32px !important;
 }
 
-#wpadminbar .bfa-analytics-main-bar:hover .ab-item {
+#wpadminbar .bfa-analytics-main-bar:hover > .ab-item {
     background: none !important;
 }
 

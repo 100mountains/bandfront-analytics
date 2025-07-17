@@ -38,19 +38,30 @@ jQuery(document).ready(function($) {
         });
     }
     
+    // Create the expanded widget if it doesn't exist
+    function ensureExpandedWidget() {
+        if (!$('#bfa-expanded-widget').length) {
+            $('body').append('<div id="bfa-expanded-widget" class="bfa-expanded-widget"></div>');
+        }
+    }
+    
     // Show expanded widget with specific section
     function showExpandedWidget(section = 'overview') {
         currentSection = section;
+        ensureExpandedWidget();
         expandedWidget = $('#bfa-expanded-widget');
         
         // Update content based on section
         updateExpandedContent(section);
         
         // Show widget with animation
-        expandedWidget.show().addClass('bfa-show');
+        expandedWidget.show();
+        setTimeout(() => {
+            expandedWidget.addClass('bfa-show');
+        }, 10);
         
         // Initialize chart if needed
-        if (!expandedChart) {
+        if (!expandedChart && section === 'overview') {
             setTimeout(initExpandedChart, 100);
         }
     }
@@ -337,29 +348,33 @@ jQuery(document).ready(function($) {
         });
     }
     
-    // Event handlers - use event delegation for dynamic content
-    $(document).on('click', '.bfa-stat-box', function(e) {
+    // Event handlers - fix selectors to match actual HTML
+    
+    // Click on the main analytics bar to show overview
+    $(document).on('click', '.bfa-admin-bar-analytics', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        const section = $(this).hasClass('bfa-views-box') ? 'views' :
-                       $(this).hasClass('bfa-visitors-box') ? 'visitors' :
-                       $(this).hasClass('bfa-plays-box') ? 'plays' :
-                       $(this).hasClass('bfa-change-box') ? 'change' : 'overview';
-        
-        showExpandedWidget(section);
+        // Check if click was on a stat box
+        const target = $(e.target).closest('.bfa-stat-box');
+        if (target.length) {
+            // Handle stat box click
+            const section = target.hasClass('bfa-views-box') ? 'views' :
+                           target.hasClass('bfa-visitors-box') ? 'visitors' :
+                           target.hasClass('bfa-plays-box') ? 'plays' :
+                           target.hasClass('bfa-change-box') ? 'change' : 'overview';
+            
+            showExpandedWidget(section);
+        } else {
+            // Click on other areas shows overview
+            showExpandedWidget('overview');
+        }
     });
     
-    // Click on brand area or chart shows overview
-    $(document).on('click', '.bfa-bar-brand, .bfa-mini-chart-container', function(e) {
+    // Prevent the default WordPress admin bar behavior
+    $(document).on('click', '#wp-admin-bar-bfa-analytics-bar a', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        showExpandedWidget('overview');
-    });
-    
-    // Prevent navigation on main bar click
-    $(document).on('click', '#wp-admin-bar-bfa-analytics-bar > a', function(e) {
-        e.preventDefault();
     });
     
     // Close expanded widget when clicking outside
@@ -422,6 +437,7 @@ jQuery(document).ready(function($) {
     // Initialize everything when document is ready
     setTimeout(function() {
         initMiniChart();
+        ensureExpandedWidget();
         
         // Update stats every 30 seconds
         setInterval(updateStats, 30000);
