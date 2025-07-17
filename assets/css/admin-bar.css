@@ -50,3 +50,43 @@
 #wpadminbar #wp-admin-bar-bfa-stats:hover #wp-admin-bar-bfa-stats-default {
     background: #1d2327 !important;
 }
+
+#wpadminbar .bfa-admin-bar-stats .ab-icon:before {
+    content: "\f185";
+    top: 2px;
+}
+
+#wpadminbar .bfa-admin-bar-stats .ab-label {
+    margin-left: 6px;
+    font-weight: 600;
+}
+
+/* Admin bar dropdown details */
+.bfa-admin-bar-details {
+    padding: 10px;
+    min-width: 200px;
+}
+
+.bfa-admin-bar-details .bfa-stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.bfa-admin-bar-details .bfa-stat-row:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.bfa-admin-bar-details strong {
+    color: #72aee6;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    #wpadminbar .bfa-admin-bar-stats .ab-label {
+        display: none;
+    }
+}
